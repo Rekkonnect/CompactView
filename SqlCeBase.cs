@@ -23,6 +23,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Data.SqlServerCe;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,7 +50,7 @@ namespace CompactView
             new Version("3.5", "3.5.0.0", 0x00357b9d),
             new Version("4.0", "4.0.0.0", 0x003d0900)
         };
-        public DbConnection Connection { get; private set; }
+        public SqlCeConnection Connection { get; private set; }
         public string FileName { get; private set; }
         public string Password { get; private set; }
         public string LastError { get; private set; }
@@ -56,7 +58,6 @@ namespace CompactView
         public bool BadPassword { get; private set; }
         public int QueryCount { get; private set; }
 
-        private Assembly assembly;
         // Regular expression to search texts finished with semicolons that is not between single quotes
         private Regex regexSemicolon = new Regex("(?:[^;']|'[^']*')+", RegexOptions.Compiled | RegexOptions.Multiline);
 
@@ -140,9 +141,12 @@ namespace CompactView
 
                 try
                 {
-                    var dbInfo = (List<KeyValuePair<string, string>>)Connection.GetType().InvokeMember("GetDatabaseInfo", BindingFlags.InvokeMethod, null, Connection, null);
-                    foreach (KeyValuePair<string, string> key in dbInfo)
-                        _databaseInfo.Rows.Add(System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(key.Key), key.Value);
+                    var dbInfo = Connection.GetDatabaseInfo();
+                    foreach (var key in dbInfo)
+                    {
+                        var titleCase = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(key.Key);
+                        _databaseInfo.Rows.Add(titleCase, key.Value);
+                    }
                 }
                 catch
                 {
@@ -152,20 +156,11 @@ namespace CompactView
                 {
                     DbCommand cmd = Connection.CreateCommand();
 
-                    cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES";
-                    _databaseInfo.Rows.Add("Tables", cmd.ExecuteScalar().ToString());
-
-                    cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.INDEXES";
-                    _databaseInfo.Rows.Add("Indexes", cmd.ExecuteScalar().ToString());
-
-                    cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE";
-                    _databaseInfo.Rows.Add("Keys", cmd.ExecuteScalar().ToString());
-
-                    cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS";
-                    _databaseInfo.Rows.Add("Table Constraints", cmd.ExecuteScalar().ToString());
-
-                    cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS";
-                    _databaseInfo.Rows.Add("Foreign Constraints", cmd.ExecuteScalar().ToString());
+                    AddDatabaseInfo(cmd, "Tables", "TABLES");
+                    AddDatabaseInfo(cmd, "Indexes", "INDEXES");
+                    AddDatabaseInfo(cmd, "Keys", "KEY_COLUMN_USAGE");
+                    AddDatabaseInfo(cmd, "Table Constraints", "TABLE_CONSTRAINTS");
+                    AddDatabaseInfo(cmd, "Foreign Constraints", "REFERENTIAL_CONSTRAINTS");
 
                     return _databaseInfo;
                 }
@@ -174,6 +169,12 @@ namespace CompactView
                     return null;
                 }
             }
+        }
+
+        private void AddDatabaseInfo(DbCommand cmd, string propertyName, string tableName)
+        {
+            cmd.CommandText = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.{tableName}";
+            _databaseInfo.Rows.Add(propertyName, cmd.ExecuteScalar().ToString());
         }
 
         private string GetFileSize(long bytes)
@@ -210,8 +211,6 @@ namespace CompactView
             _tableNames = null;
         }
 
-        private enum ResultSetOptions : int { None, Updatable, Scrollable, Sensitive, Insensitive };
-
         public IEnumerable<Match> GetSqlStatements(string sql)
         {
             foreach (Match match in regexSemicolon.Matches(sql))
@@ -233,8 +232,8 @@ namespace CompactView
 
             LastError = string.Empty;
 
-            object command = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeCommand", false, BindingFlags.CreateInstance, null, new object[] { null, Connection }, null, null);
-            var enumType = assembly.GetType("System.Data.SqlServerCe.ResultSetOptions");
+            var command = new SqlCeCommand(null, Connection);
+
             ResultSetOptions options = updatable ? ResultSetOptions.Scrollable | ResultSetOptions.Updatable : ResultSetOptions.Scrollable;
 
             object result = null;
@@ -247,9 +246,9 @@ namespace CompactView
                 QueryCount++;
                 try
                 {
-                    command.GetType().InvokeMember("CommandText", BindingFlags.SetProperty, null, command, new object[] { m.Value.Trim() });
-                    object resultset = command.GetType().GetMethod("ExecuteResultSet", new Type[] { enumType }, null).Invoke(command, new object[] { options });
-                    bool scrollable = (bool)resultset.GetType().InvokeMember("Scrollable", BindingFlags.GetProperty, null, resultset, null);
+                    command.CommandText = m.Value.Trim();
+                    var resultset = command.ExecuteResultSet(options);
+                    bool scrollable = resultset.Scrollable;
                     if (scrollable)
                         result = resultset;
                 }
@@ -270,11 +269,15 @@ namespace CompactView
 
         public bool Compact(string databaseFile, string password, string newPassword)
         {
-            string connectionStr = password == newPassword ? null : $"Data Source=; Password={(newPassword ?? string.Empty)}";
-            return Tool(databaseFile, password, "Compact", new object[] { connectionStr });
-        }
+            string connectionStr = password == newPassword
+                ? null
+                : $"Data Source=; Password={(newPassword ?? string.Empty)}";
 
-        private enum RepairOption : int { DeleteCorruptedRows, RecoverCorruptedRows, RecoverAllPossibleRows, RecoverAllOrFail }
+            return OperateEngine(
+                databaseFile,
+                password,
+                engine => engine.Compact(connectionStr));
+        }
 
         public bool Repair(string databaseFile)
         {
@@ -283,14 +286,21 @@ namespace CompactView
 
         public bool Repair(string databaseFile, string password, string newPassword)
         {
-            string connectionStr = password == newPassword ? null : $"Data Source={databaseFile}; Password={(newPassword ?? string.Empty)}";
-            bool ok = DoRepair(databaseFile, password, new object[] { connectionStr, RepairOption.RecoverAllPossibleRows });
+            string connectionStr = password == newPassword
+                ? null
+                : $"Data Source={databaseFile}; Password={(newPassword ?? string.Empty)}";
+
+            bool ok = DoRepair(databaseFile, password, connectionStr, RepairOption.RecoverAllPossibleRows);
+
             if (ok)
-                ok = DoRepair(databaseFile, newPassword, new object[] { connectionStr, RepairOption.DeleteCorruptedRows });
+            {
+                ok = DoRepair(databaseFile, newPassword, connectionStr, RepairOption.DeleteCorruptedRows);
+            }
+
             return ok;
         }
 
-        private bool DoRepair(string databaseFile, string password, object[] parameters)
+        private bool DoRepair(string databaseFile, string password, string repairConnectionString, RepairOption repairOptions)
         {
             Close();
             if (!Open(databaseFile, password))
@@ -301,10 +311,9 @@ namespace CompactView
 
             try
             {
-                object engine = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeEngine", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
-                var enumType = assembly.GetType("System.Data.SqlServerCe.RepairOption");
-                engine.GetType().GetMethod("Repair", new Type[] { typeof(string), enumType }, null).Invoke(engine, parameters);
-                engine.GetType().InvokeMember("Dispose", BindingFlags.InvokeMethod, null, engine, null);
+                var engine = new SqlCeEngine(connectionStr);
+                engine.Repair(repairConnectionString, repairOptions);
+                engine.Dispose();
                 return true;
             }
             catch (Exception e)
@@ -321,8 +330,14 @@ namespace CompactView
 
         public bool Shrink(string databaseFile, string password, string newPassword)
         {
-            string connectionStr = password == newPassword ? null : $"Data Source=; Password={(newPassword ?? string.Empty)}";
-            return Tool(databaseFile, password, "Shrink", null);
+            string connectionStr = password == newPassword
+                ? null
+                : $"Data Source=; Password={(newPassword ?? string.Empty)}";
+
+            return OperateEngine(
+                databaseFile,
+                password,
+                engine => engine.Shrink());
         }
 
         public bool Upgrade(string databaseFile, Version toVersion)
@@ -341,8 +356,8 @@ namespace CompactView
 
             try
             {
-                object engine = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeEngine", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
-                engine.GetType().InvokeMember("Upgrade", BindingFlags.InvokeMethod, null, engine, new object[] { newConnectionStr });
+                var engine = new SqlCeEngine(connectionStr);
+                engine.Upgrade(newConnectionStr);
                 return true;
             }
             catch (Exception e)
@@ -369,8 +384,8 @@ namespace CompactView
             try
             {
                 LastError = string.Empty;
-                object engine = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeEngine", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
-                return (bool)engine.GetType().InvokeMember("Verify", BindingFlags.InvokeMethod, null, engine, null);
+                var engine = new SqlCeEngine(connectionStr);
+                return engine.Verify();
             }
             catch (Exception e)
             {
@@ -407,8 +422,8 @@ namespace CompactView
                 connectionStr += $"; LCID={lcid}";
             try
             {
-                object engine = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeEngine", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
-                engine.GetType().InvokeMember("CreateDatabase", BindingFlags.InvokeMethod, null, engine, null);
+                var engine = new SqlCeEngine(connectionStr);
+                engine.CreateDatabase();
                 return true;
             }
             catch (Exception e)
@@ -435,7 +450,7 @@ namespace CompactView
             return s;
         }
 
-        private bool Tool(string databaseFile, string password, string tool, object[] parameters)
+        private bool OperateEngine(string databaseFile, string password, Action<SqlCeEngine> engineAction)
         {
             Close();
             if (!Open(databaseFile, password))
@@ -446,8 +461,8 @@ namespace CompactView
 
             try
             {
-                object engine = assembly.CreateInstance("System.Data.SqlServerCe.SqlCeEngine", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
-                engine.GetType().InvokeMember(tool, BindingFlags.InvokeMethod, null, engine, parameters);
+                var engine = new SqlCeEngine(connectionStr);
+                engineAction?.Invoke(engine);
                 return true;
             }
             catch (Exception e)
@@ -457,39 +472,17 @@ namespace CompactView
             }
         }
 
+
         private bool OpenConnection(Version version, string databaseFile, string password)
         {
             Connection = null;
             Version = null;
-            string[] vers = version.SqlceVersion.Split('.');
 
             string connectionStr = GetConnectionString(databaseFile, password);
 
             try
             {
-                assembly = Assembly.Load($"System.Data.SqlServerCe, Version={version.AssemblyVersion}, Culture=neutral, PublicKeyToken=89845dcd8080cc91");
-            }
-            catch (Exception e)
-            {
-                try
-                {
-                    string desktop = (version.SqlceVersion == "3.1") ? string.Empty : @"\Desktop";
-                    string assemblyPath = $@"Microsoft SQL Server Compact Edition\v{vers[0]}.{vers[1]}{desktop}\System.Data.SqlServerCe.dll";
-                    string progFilePath = Environment.GetFolderPath(IntPtr.Size == 4 ? Environment.SpecialFolder.ProgramFilesX86 : Environment.SpecialFolder.ProgramFiles);
-                    assembly = Assembly.LoadFile(Path.Combine(progFilePath, assemblyPath));
-                }
-                catch
-                {
-                    LastError = e.Message;
-                    return false;
-                }
-            }
-            if (assembly == null)
-                return false;
-
-            try
-            {
-                Connection = (DbConnection)assembly.CreateInstance("System.Data.SqlServerCe.SqlCeConnection", false, BindingFlags.CreateInstance, null, new object[] { connectionStr }, null, null);
+                Connection = new SqlCeConnection(connectionStr);
                 if (Connection == null)
                     return false;
                 Connection.Open();
@@ -501,8 +494,8 @@ namespace CompactView
                 int nativeError = int.MinValue;
                 try
                 {
-                    var ex = e.GetBaseException();
-                    nativeError = (int)ex.GetType().InvokeMember("NativeError", BindingFlags.GetProperty, null, ex, null);
+                    var ex = e.GetBaseException() as SqlCeException;
+                    nativeError = ex.NativeError;
                 }
                 catch
                 {

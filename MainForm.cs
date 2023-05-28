@@ -452,9 +452,12 @@ namespace CompactView
                     MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
                 if (result == DialogResult.Cancel)
                     return;
-                partial = result == DialogResult.Yes;
+
+                shouldWarnPartialSelection = result == DialogResult.Yes;
             }
-            string sql = partial ? rtbQuery.SelectedText.Trim() : rtbQuery.Text.Trim();
+            string sql = shouldWarnPartialSelection
+                ? rtbQuery.SelectedText.Trim()
+                : rtbQuery.Text.Trim();
 
             dataGrid.DataSource = null;
 
