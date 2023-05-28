@@ -241,6 +241,11 @@ namespace CompactView
                     main.Expand();
                     treeDb.EndUpdate();
                     treeDb.SelectedNode = treeDb.Nodes[0];
+
+                    // Show query panel immediately
+                    btnQuery.Checked = true;
+                    UpdateQueryPanelState();
+
                     settings.AddToRecentFiles(fileName);
                     UpdateRecentFilesMenu();
                 }
@@ -358,12 +363,17 @@ namespace CompactView
                 LoadDatabase(openFileDialog1.FileName);
         }
 
-        private void btnQuery_Click(object sender, EventArgs e)
+        private void UpdateQueryPanelState()
         {
             splitterHorizontal.Panel1Collapsed = splitterHorizontal.IsSplitterFixed = !btnQuery.Checked;
             showEditorMenuItem.Checked = btnQuery.Checked;
             rtbQuery.Select();
             UpdateStatus();
+        }
+
+        private void btnQuery_Click(object sender, EventArgs e)
+        {
+            UpdateQueryPanelState();
         }
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)

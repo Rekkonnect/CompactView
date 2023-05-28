@@ -21,6 +21,7 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -29,15 +30,15 @@ namespace CompactView
 {
     public class SqlCeDb : SqlCeBase
     {
-        private System.Globalization.CultureInfo culture;
-        private Dictionary<string, string> tablesDdl = new Dictionary<string, string>();
-        private Dictionary<string, string> primaryKeysDdl = new Dictionary<string, string>();
-        private Dictionary<string, string> indexesDdl = new Dictionary<string, string>();
-        private Dictionary<string, string> foreignKeysDdl = new Dictionary<string, string>();
+        private CultureInfo culture;
+        private readonly Dictionary<string, string> tablesDdl = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> primaryKeysDdl = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> indexesDdl = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> foreignKeysDdl = new Dictionary<string, string>();
 
         public SqlCeDb() : base()
         {
-            culture = System.Globalization.CultureInfo.InvariantCulture;
+            culture = CultureInfo.InvariantCulture;
         }
 
         new public bool Open(string databaseFile, string password)
@@ -271,7 +272,7 @@ namespace CompactView
             return cst;
         }
 
-        private void AddColumnLine(ref StringBuilder ddl, Column col)
+        private void AddColumnLine(StringBuilder ddl, Column col)
         {
             switch (col.DataType)
             {
@@ -363,7 +364,7 @@ namespace CompactView
                     first = false;
                 else
                     ddl.Append($",{Environment.NewLine}");
-                AddColumnLine(ref ddl, GetColumn(ref dr));
+                AddColumnLine(ddl, GetColumn(ref dr));
             }
             dr.Close();
         }
