@@ -152,7 +152,7 @@ namespace CompactView
                 { "Paste", "Paste" },
                 { "LoadFromFile", "Load from file" },
                 { "SaveToFile", "Save to file" },
-                { "Querys", "Querys" },
+                { "Queries", "Queries" },
                 { "Print", "Print" },
                 { "File", "File" },
                 { "RecentFiles", "RecentFiles" },

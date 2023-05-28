@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -88,7 +89,7 @@ namespace CompactView
             Version version = GetSdfVersion(FileName);
             if (version == null)
             {
-                foreach (Version ver in AvailableVersions.Reverse<Version>())
+                foreach (var ver in AvailableVersions.Reverse())
                 {
                     ok = OpenConnection(ver, databaseFile, password);
                     if (ok || BadPassword)
@@ -211,6 +212,17 @@ namespace CompactView
 
         private enum ResultSetOptions : int { None, Updatable, Scrollable, Sensitive, Insensitive };
 
+        public IEnumerable<Match> GetSqlStatements(string sql)
+        {
+            foreach (Match match in regexSemicolon.Matches(sql))
+            {
+                if (!string.IsNullOrWhiteSpace(match.Value))
+                {
+                    yield return match;
+                }
+            }
+        }
+
         public object ExecuteSql(string sql, bool updatable)
         {
             if (Connection == null)
@@ -228,24 +240,25 @@ namespace CompactView
             object result = null;
             QueryCount = 0;
 
-            for (Match m = regexSemicolon.Match(sql); m.Success; m = m.NextMatch())
-                if (!string.IsNullOrWhiteSpace(m.Value))
+            var matches = GetSqlStatements(sql);
+
+            foreach (var m in matches)
+            {
+                QueryCount++;
+                try
                 {
-                    QueryCount++;
-                    try
-                    {
-                        command.GetType().InvokeMember("CommandText", BindingFlags.SetProperty, null, command, new object[] { m.Value.Trim() });
-                        object resultset = command.GetType().GetMethod("ExecuteResultSet", new Type[] { enumType }, null).Invoke(command, new object[] { options });
-                        bool scrollable = (bool)resultset.GetType().InvokeMember("Scrollable", BindingFlags.GetProperty, null, resultset, null);
-                        if (scrollable)
-                            result = resultset;
-                    }
-                    catch (Exception e)
-                    {
-                        LastError = $"{GlobalText.GetValue("Query")} {QueryCount}: {(e.InnerException == null ? e.Message : e.InnerException.Message)}";
-                        return null;
-                    }
+                    command.GetType().InvokeMember("CommandText", BindingFlags.SetProperty, null, command, new object[] { m.Value.Trim() });
+                    object resultset = command.GetType().GetMethod("ExecuteResultSet", new Type[] { enumType }, null).Invoke(command, new object[] { options });
+                    bool scrollable = (bool)resultset.GetType().InvokeMember("Scrollable", BindingFlags.GetProperty, null, resultset, null);
+                    if (scrollable)
+                        result = resultset;
                 }
+                catch (Exception e)
+                {
+                    LastError = $"{GlobalText.GetValue("Query")} {QueryCount}: {(e.InnerException == null ? e.Message : e.InnerException.Message)}";
+                    return null;
+                }
+            }
 
             return result;
         }
@@ -496,15 +509,15 @@ namespace CompactView
                 }
                 switch (nativeError)
                 {
-                    case 25138:
-                        break;  // Old database version that needs to be upgraded
-                    case 25028:
+                    case SqlCeNativeErrors.OldVersion:
+                        break;
+                    case SqlCeNativeErrors.BadPassword:
                         BadPassword = true;
-                        break;  // Bad password
-                    case 28609:
-                        break;  // Incorrect version of database, more recent than expected
+                        break;
+                    case SqlCeNativeErrors.IncorrectDatabaseVersion:
+                        break;
                     default:
-                        throw (e);
+                        throw e;
                 }
                 LastError = e.Message;
                 return false;

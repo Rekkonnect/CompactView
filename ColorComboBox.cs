@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -96,8 +97,8 @@ namespace CompactView
 
         private static void Init()
         {
-            grayDotPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
-            blackDotPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+            grayDotPen.DashStyle = DashStyle.Dot;
+            blackDotPen.DashStyle = DashStyle.Dot;
 
             var colors = Enum.GetValues(typeof(KnownColor))
                 .Cast<KnownColor>()

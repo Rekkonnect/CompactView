@@ -21,12 +21,14 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.Drawing.Text;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -419,17 +421,32 @@ namespace CompactView
 
         private void mainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            // On F5 key press, execute the query
-            if (e.KeyData == Keys.F5 && rtbQuery.Focused)
-                btnExecute.PerformClick();
+            switch (e.KeyData)
+            {
+                // On F5 key press, execute the query
+                case Keys.F5:
+                    if (rtbQuery.Focused)
+                    {
+                        ExecuteQuery(true);
+                    }
+                    break;
+            }
         }
 
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            if (rtbQuery.Text.Trim().Length == 0)
+            ExecuteQuery(true);
+        }
+
+        private void ExecuteQuery(bool shouldWarnPartialSelection)
+        {
+            bool isEmptySql = string.IsNullOrWhiteSpace(rtbQuery.Text);
+            if (isEmptySql)
                 return;
-            bool partial = rtbQuery.SelectedText.Trim().Length > 0;
-            if (partial)
+
+            bool partial = !string.IsNullOrWhiteSpace(rtbQuery.SelectedText);
+            shouldWarnPartialSelection &= partial;
+            if (shouldWarnPartialSelection)
             {
                 DialogResult result = MessageBox.Show(GlobalText.GetValue("SelectedTextQuery"), GlobalText.GetValue("Confirm"),
                     MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
@@ -453,7 +470,7 @@ namespace CompactView
             if (resultSet != null || string.IsNullOrEmpty(db.LastError))
             {
                 lbResult.ForeColor = Color.Black;
-                lbResult.Text = $"{db.QueryCount} {GlobalText.GetValue("Querys")}, {dataGrid.RowCount} {GlobalText.GetValue("Rows")}, {ms} {GlobalText.GetValue("Milliseconds")}";
+                lbResult.Text = $"{db.QueryCount} {GlobalText.GetValue("Queries")}, {dataGrid.RowCount} {GlobalText.GetValue("Rows")}, {ms} {GlobalText.GetValue("Milliseconds")}";
                 if (resultSet == null && regexCreateAlterDrop.IsMatch(regexDropQuotesAndBrackets.Replace(rtbQuery.Text, string.Empty)))
                 {
                     db.ResetDdl();  // Update DDL
@@ -642,6 +659,63 @@ namespace CompactView
         private void rtbQuery_Enter_Leave_SelectionChanged(object sender, EventArgs e)
         {
             UpdateStatus();
+        }
+
+        private void rtbQuery_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyData)
+            {
+                case Keys.Enter | Keys.Control:
+                    // Only select the text around the current statement
+                    if (rtbQuery.Focused)
+                    {
+                        SelectCurrentStatementAroundCursor();
+                    }
+                    ExecuteQuery(false);
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void SelectCurrentStatementAroundCursor()
+        {
+            int selectedIndex = rtbQuery.SelectionStart;
+            if (selectedIndex >= rtbQuery.Text.Length)
+                selectedIndex = rtbQuery.Text.Length - 1;
+
+            var statements = db.GetSqlStatements(rtbQuery.Text).ToArray();
+
+            foreach (var statement in statements)
+            {
+                bool shouldSelect = ShouldSelectStatement(statement, selectedIndex);
+
+                if (shouldSelect)
+                {
+                    SelectStatement(statement);
+                    return;
+                }
+            }
+
+            if (statements.Length > 0)
+            {
+                var lastStatement = statements.Last();
+                SelectStatement(lastStatement);
+            }
+        }
+
+        private void SelectStatement(Match statement)
+        {
+            rtbQuery.Select(statement.Index, statement.Length);
+        }
+
+        private static bool ShouldSelectStatement(Match statement, int selectedIndex)
+        {
+            if (statement.Index > selectedIndex)
+                return true;
+
+            var statementEndIndex = statement.Index + statement.Length;
+            return statement.Index <= selectedIndex
+                && selectedIndex <= statementEndIndex;
         }
 
         private void btnCut_Click(object sender, EventArgs e)

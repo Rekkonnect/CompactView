@@ -278,6 +278,7 @@
             this.rtbQuery.WordWrap = false;
             this.rtbQuery.SelectionChanged += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
             this.rtbQuery.Enter += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
+            this.rtbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.rtbQuery_KeyDown);
             this.rtbQuery.Leave += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
             // 
             // contextMenuStrip1
@@ -774,7 +775,7 @@
             this.toolStripSeparator7,
             this.optionsMenuItem});
             this.toolsMenuItem.Name = "toolsMenuItem";
-            this.toolsMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsMenuItem.Text = "Tools";
             // 
             // databaseToolsMenuItem

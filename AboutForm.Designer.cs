@@ -131,7 +131,7 @@
             this.linkLabel1.Size = new System.Drawing.Size(313, 24);
             this.linkLabel1.TabIndex = 25;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "http://sourceforge.net/p/compactview";
+            this.linkLabel1.Text = "https://github.com/Rekkonnect/CompactView";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // panel1
