@@ -30,18 +30,26 @@ namespace CompactView
 {
     public class Settings
     {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public bool Maximized { get; set; }
-        public int TextColor1 { get; set; }
-        public int TextColor2 { get; set; }
-        public int BackColor1 { get; set; }
-        public int BackColor2 { get; set; }
-        public int ColorSet { get; set; }
-        public StringCollection RecentFiles { get; set; }
-        public int MaxRecentFiles { get; set; }
+        // Window
+        public int X;
+        public int Y;
+        public int Width;
+        public int Height;
+        public bool Maximized;
+
+        // Appearance
+        public int TextColor1;
+        public int TextColor2;
+        public int BackColor1;
+        public int BackColor2;
+        public int ColorSet;
+
+        // Behavior
+        public bool OmitSelectedTextExecutionPopup;
+
+        // Recent Files
+        public StringCollection RecentFiles;
+        public int MaxRecentFiles;
 
         public Settings()
         {
@@ -59,15 +67,6 @@ namespace CompactView
                 RecentFiles.RemoveAt(MaxRecentFiles - 1);
             RecentFiles.Insert(0, fileName);
             return true;
-        }
-
-        public bool RemoveFromRecentFiles(string fileName)
-        {
-            int i = RecentFiles.IndexOf(fileName);
-            bool ok = i >= 0;
-            if (ok)
-                RecentFiles.RemoveAt(i);
-            return ok;
         }
 
         private string FileName
@@ -93,26 +92,19 @@ namespace CompactView
                 return;
             DataRow row = table.Rows[0];
 
-            if (table.Columns.Contains("X"))
-                X = row.Field<int>("X");
-            if (table.Columns.Contains("Y"))
-                Y = row.Field<int>("Y");
-            if (table.Columns.Contains("Width"))
-                Width = row.Field<int>("Width");
-            if (table.Columns.Contains("Height"))
-                Height = row.Field<int>("Height");
-            if (table.Columns.Contains("Maximized"))
-                Maximized = row.Field<bool>("Maximized");
-            if (table.Columns.Contains("TextColor1"))
-                TextColor1 = row.Field<int>("TextColor1");
-            if (table.Columns.Contains("TextColor2"))
-                TextColor2 = row.Field<int>("TextColor2");
-            if (table.Columns.Contains("BackColor1"))
-                BackColor1 = row.Field<int>("BackColor1");
-            if (table.Columns.Contains("BackColor2"))
-                BackColor2 = row.Field<int>("BackColor2");
-            if (table.Columns.Contains("ColorSet"))
-                ColorSet = row.Field<int>("ColorSet");
+            table.ReadField(row, "X", ref X);
+            table.ReadField(row, "Y", ref Y);
+            table.ReadField(row, "Width", ref Width);
+            table.ReadField(row, "Height", ref Height);
+            table.ReadField(row, "Maximized", ref Maximized);
+
+            table.ReadField(row, "TextColor1", ref TextColor1);
+            table.ReadField(row, "TextColor2", ref TextColor2);
+            table.ReadField(row, "BackColor1", ref BackColor1);
+            table.ReadField(row, "BackColor2", ref BackColor2);
+            table.ReadField(row, "ColorSet", ref ColorSet);
+
+            table.ReadField(row, nameof(OmitSelectedTextExecutionPopup), ref OmitSelectedTextExecutionPopup);
 
             RecentFiles.Clear();
             for (int i = 1; i <= MaxRecentFiles; i++)
@@ -125,16 +117,21 @@ namespace CompactView
         public void Save()
         {
             var table = new DataTable("Settings");
+
             table.Columns.Add("X", typeof(int));
             table.Columns.Add("Y", typeof(int));
             table.Columns.Add("Width", typeof(int));
             table.Columns.Add("Height", typeof(int));
             table.Columns.Add("Maximized", typeof(bool));
+
             table.Columns.Add("TextColor1", typeof(int));
             table.Columns.Add("TextColor2", typeof(int));
             table.Columns.Add("BackColor1", typeof(int));
             table.Columns.Add("BackColor2", typeof(int));
             table.Columns.Add("ColorSet", typeof(int));
+
+            table.Columns.Add(nameof(OmitSelectedTextExecutionPopup), typeof(bool));
+
             for (int i = 1; i <= RecentFiles.Count; i++)
                 table.Columns.Add($"RecentFiles{i}", typeof(string));
 
@@ -144,13 +141,18 @@ namespace CompactView
             row[2] = Width;
             row[3] = Height;
             row[4] = Maximized;
+
             row[5] = TextColor1;
             row[6] = TextColor2;
             row[7] = BackColor1;
             row[8] = BackColor2;
             row[9] = ColorSet;
+
+            row[10] = OmitSelectedTextExecutionPopup;
+
             for (int i = 0; i < RecentFiles.Count; i++)
-                row[i + 10] = RecentFiles[i];
+                row[i + 11] = RecentFiles[i];
+
             table.Rows.Add(row);
 
             try

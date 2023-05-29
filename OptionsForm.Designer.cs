@@ -52,8 +52,11 @@
             this.label7 = new System.Windows.Forms.Label();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.behaviorGroupBox = new System.Windows.Forms.GroupBox();
+            this.alwaysExecuteSelectedStatementCheckBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.behaviorGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // cbBackground1
@@ -157,7 +160,7 @@
             // btnOk
             // 
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(239, 229);
+            this.btnOk.Location = new System.Drawing.Point(239, 324);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(92, 25);
             this.btnOk.TabIndex = 2;
@@ -167,7 +170,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(360, 229);
+            this.btnCancel.Location = new System.Drawing.Point(360, 324);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(92, 25);
             this.btnCancel.TabIndex = 2;
@@ -284,13 +287,35 @@
             this.colorDialog1.AnyColor = true;
             this.colorDialog1.FullOpen = true;
             // 
+            // behaviorGroupBox
+            // 
+            this.behaviorGroupBox.Controls.Add(this.alwaysExecuteSelectedStatementCheckBox);
+            this.behaviorGroupBox.Location = new System.Drawing.Point(12, 221);
+            this.behaviorGroupBox.Name = "behaviorGroupBox";
+            this.behaviorGroupBox.Size = new System.Drawing.Size(669, 97);
+            this.behaviorGroupBox.TabIndex = 4;
+            this.behaviorGroupBox.TabStop = false;
+            this.behaviorGroupBox.Text = "Behavior";
+            // 
+            // alwaysExecuteSelectedStatementCheckBox
+            // 
+            this.alwaysExecuteSelectedStatementCheckBox.AutoSize = true;
+            this.alwaysExecuteSelectedStatementCheckBox.Location = new System.Drawing.Point(14, 28);
+            this.alwaysExecuteSelectedStatementCheckBox.Name = "alwaysExecuteSelectedStatementCheckBox";
+            this.alwaysExecuteSelectedStatementCheckBox.Size = new System.Drawing.Size(281, 17);
+            this.alwaysExecuteSelectedStatementCheckBox.TabIndex = 0;
+            this.alwaysExecuteSelectedStatementCheckBox.Text = "Always execute the selected statement without asking";
+            this.alwaysExecuteSelectedStatementCheckBox.UseVisualStyleBackColor = true;
+            this.alwaysExecuteSelectedStatementCheckBox.CheckedChanged += new System.EventHandler(this.alwaysExecuteSelectedStatementCheckBox_CheckedChanged);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(693, 265);
+            this.ClientSize = new System.Drawing.Size(693, 361);
+            this.Controls.Add(this.behaviorGroupBox);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
@@ -306,6 +331,8 @@
             this.Load += new System.EventHandler(this.OptionsForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            this.behaviorGroupBox.ResumeLayout(false);
+            this.behaviorGroupBox.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -334,5 +361,7 @@
         private System.Windows.Forms.ComboBox cbColorSet;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox behaviorGroupBox;
+        private System.Windows.Forms.CheckBox alwaysExecuteSelectedStatementCheckBox;
     }
 }

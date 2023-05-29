@@ -195,7 +195,9 @@ namespace CompactView
                 { "Indexes", "Indexes" },
                 { "Keys", "Keys" },
                 { "TableConstraints", "Table Constraints" },
-                { "ForeignConstraints", "Foreign Constraints" }
+                { "ForeignConstraints", "Foreign Constraints" },
+                { "BehaviorSettingsGroup", "Behavior" },
+                { "ExecuteSelectedStatementWithoutAsking", "Always execute the selected statement without asking" },
             };
 
             string fileName = XmlName("en-EN");

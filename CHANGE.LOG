@@ -1,8 +1,17 @@
+2023/05/29  v1.5.0   Feature: The SQL query editor now opens immediately after
+                     loading a database.
+                     Feature: Ctrl+Enter in the SQL query editor only
+                     executes the surrounding statement around the cursor.
+                     Optimization: Added an assembly dependency to the
+                     System.Data.SqlServerCe assembly, and eliminated the
+                     use of reflection to interact with it.
+                     Feature: A new setting to avoid showing the popup
+                     for only executing the selected text.
 2017/07/13  v1.4.14  Fix bug: Failed to display tables of more than 255
                      fields.
 2017/02/17  v1.4.13  Right-clicking on the header causes the width of
                      the column fit all cells.
-					 Added German translation (Thanks to Peet Baldem).
+                     Added German translation (Thanks to Peet Baldem).
 2015/11/11  v1.4.12  Added traditional and simplified Chinese 
                      translations (Thanks to Jordan Chen).
 2015/08/31  v1.4.11  Added Turkish translation.

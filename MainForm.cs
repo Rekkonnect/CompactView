@@ -265,7 +265,7 @@ namespace CompactView
             {
                 GlobalText.ShowError("UnableToOpen", ex.Message);
                 btnQuery.Enabled = btnExecute.Enabled = btnClear.Enabled = false;
-                settings.RemoveFromRecentFiles(fileName);
+                settings.RecentFiles.Remove(fileName);
                 UpdateRecentFilesMenu();
             }
             Cursor = Cursors.Default;
@@ -454,8 +454,9 @@ namespace CompactView
             if (isEmptySql)
                 return;
 
-            bool partial = !string.IsNullOrWhiteSpace(rtbQuery.SelectedText);
-            shouldWarnPartialSelection &= partial;
+            bool isPartialSelection = !string.IsNullOrWhiteSpace(rtbQuery.SelectedText);
+            shouldWarnPartialSelection &= isPartialSelection
+                && !settings.OmitSelectedTextExecutionPopup;
             if (shouldWarnPartialSelection)
             {
                 DialogResult result = MessageBox.Show(GlobalText.GetValue("SelectedTextQuery"), GlobalText.GetValue("Confirm"),
@@ -463,9 +464,9 @@ namespace CompactView
                 if (result == DialogResult.Cancel)
                     return;
 
-                shouldWarnPartialSelection = result == DialogResult.Yes;
+                isPartialSelection = result == DialogResult.Yes;
             }
-            string sql = shouldWarnPartialSelection
+            string sql = isPartialSelection
                 ? rtbQuery.SelectedText.Trim()
                 : rtbQuery.Text.Trim();
 

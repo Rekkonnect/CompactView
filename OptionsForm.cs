@@ -70,6 +70,7 @@ namespace CompactView
             groupBox2.Text = GlobalText.GetValue("UserDefined");
             btnOk.Text = GlobalText.GetValue("Ok");
             btnCancel.Text = GlobalText.GetValue("Cancel");
+            behaviorGroupBox.Text = GlobalText.GetValue("Colors");
         }
 
         private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -210,6 +211,11 @@ namespace CompactView
             label2.BackColor = label4.BackColor = dataGrid.AlternatingRowsDefaultCellStyle.BackColor;
             label1.ForeColor = label3.ForeColor = dataGrid.DefaultCellStyle.ForeColor;
             label2.ForeColor = label4.ForeColor = dataGrid.AlternatingRowsDefaultCellStyle.ForeColor;
+        }
+
+        private void alwaysExecuteSelectedStatementCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.OmitSelectedTextExecutionPopup = alwaysExecuteSelectedStatementCheckBox.Checked;
         }
     }
 }
