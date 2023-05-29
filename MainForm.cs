@@ -681,7 +681,7 @@ namespace CompactView
             {
                 case Keys.Enter | Keys.Control:
                     // Only select the text around the current statement
-                    if (rtbQuery.Focused)
+                    if (rtbQuery.SelectionLength == 0)
                     {
                         SelectCurrentStatementAroundCursor();
                     }
@@ -699,6 +699,8 @@ namespace CompactView
 
             var statements = db.GetSqlStatements(rtbQuery.Text).ToArray();
 
+            // The statements are always ordered in ascending index of occurrence
+            // As a result, this simple traversal suffices for preserving the order
             foreach (var statement in statements)
             {
                 bool shouldSelect = ShouldSelectStatement(statement, selectedIndex);
@@ -727,7 +729,7 @@ namespace CompactView
             if (statement.Index > selectedIndex)
                 return true;
 
-            var statementEndIndex = statement.Index + statement.Length;
+            var statementEndIndex = statement.Index + statement.Length + 1;
             return statement.Index <= selectedIndex
                 && selectedIndex <= statementEndIndex;
         }
