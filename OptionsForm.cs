@@ -39,6 +39,14 @@ namespace CompactView
 
             SetCultureTexts();
             this.settings = settings;
+            
+            LoadSettings(dataGridView, settings);
+            
+            dataGrid = dataGridView;
+        }
+
+        private void LoadSettings(DataGridView dataGridView, Settings settings)
+        {
             ColorComboBox.LinkTo(cbBackground1);
             ColorComboBox.LinkTo(cbBackground2);
             ColorComboBox.LinkTo(cbFont1);
@@ -52,7 +60,8 @@ namespace CompactView
             foreColor1 = label1.ForeColor = label3.ForeColor = dataGridView.DefaultCellStyle.ForeColor;
             foreColor2 = label2.ForeColor = label4.ForeColor = dataGridView.AlternatingRowsDefaultCellStyle.ForeColor;
             cbColorSet.SelectedIndex = settings.ColorSet;
-            dataGrid = dataGridView;
+
+            alwaysExecuteSelectedStatementCheckBox.Checked = settings.OmitSelectedTextExecutionPopup;
         }
 
         private void SetCultureTexts()
