@@ -985,5 +985,20 @@ namespace CompactView
         {
             e.Column.FillWeight = 1;
         }
+
+        private void commentButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ToggleCurrentComment()
+        {
+
+        }
+
+        private void ToggleSingleLineComment()
+        {
+
+        }
     }
 }

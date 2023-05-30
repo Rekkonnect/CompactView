@@ -104,6 +104,8 @@
             this.aboutCompactViewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.commentButton = new System.Windows.Forms.ToolStripButton();
             this.toolBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitterHorizontal)).BeginInit();
             this.splitterHorizontal.Panel1.SuspendLayout();
@@ -135,7 +137,9 @@
             this.toolStripSeparator5,
             this.btnQuery,
             this.btnExecute,
-            this.btnClear});
+            this.btnClear,
+            this.toolStripSeparator2,
+            this.commentButton});
             this.toolBar.Location = new System.Drawing.Point(0, 24);
             this.toolBar.Name = "toolBar";
             this.toolBar.Size = new System.Drawing.Size(748, 25);
@@ -833,6 +837,21 @@
             this.copyToolStripMenuItem1.Text = "Copy";
             this.copyToolStripMenuItem1.Click += new System.EventHandler(this.copyToolStripMenuItem1_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // commentButton
+            // 
+            this.commentButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.commentButton.Image = ((System.Drawing.Image)(resources.GetObject("commentButton.Image")));
+            this.commentButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.commentButton.Name = "commentButton";
+            this.commentButton.Size = new System.Drawing.Size(23, 22);
+            this.commentButton.Text = "toolStripButton1";
+            this.commentButton.Click += new System.EventHandler(this.commentButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -948,6 +967,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem1;
-	}
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton commentButton;
+    }
 }
 
