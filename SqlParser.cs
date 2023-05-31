@@ -160,7 +160,7 @@ namespace CompactView
 
         private bool parsing = false;
 
-        public void ParseRichTextBox(int posIniChar, int posEndChar)
+        public void ParseRichTextBox(int posIni, int posEnd)
         {
             if (parsing)
                 return;
@@ -172,7 +172,7 @@ namespace CompactView
             selectionStart = richTextBox.SelectionStart;
 
             richTextBox.SetRedraw(false);
-            richTextBox.Select(posIniChar, posEndChar - posIniChar + 1);
+            richTextBox.Select(posIni, posEnd - posIni + 1);
             richTextBox.SelectedRtf = Parse(richTextBox.SelectedText);
 
             richTextBox.Select(selectionStart, selectionLength);

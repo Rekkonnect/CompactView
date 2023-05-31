@@ -19,24 +19,19 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
+using System.Text;
+
 namespace CompactView.Lexing
 {
-    public readonly struct Token
+    public static class LexExtensions
     {
-        public TokenKind Kind { get; }
-        public StringSlice Value { get; }
-
-        public bool IsValid => Value.Source != null;
-
-        public Token(TokenKind kind, StringSlice value)
+        public static StringBuilder AppendSlice(this StringBuilder sb, StringSlice slice)
         {
-            Kind = kind;
-            Value = value;
+            return sb.Append(slice.Source, slice.Offset, slice.Length);
         }
-
-        public override string ToString()
+        public static StringBuilder AppendToken(this StringBuilder sb, Token token)
         {
-            return $"{Kind}: '{Value}'";
+            return AppendSlice(sb, token.Value);
         }
     }
 }

@@ -233,8 +233,13 @@ namespace CompactView.Lexing
 
                         inNumber = false;
 
-                        if (char.IsLetter(currentChar))
+                        if (char.IsLetter(currentChar) || currentChar == '_')
                         {
+                            if (!inIdentifier)
+                            {
+                                ConsumeToken(TokenKind.Identifier, i);
+                                inIdentifier = true;
+                            }
                             continue;
                         }
 
@@ -245,7 +250,9 @@ namespace CompactView.Lexing
                             case TokenKind.Identifier:
                             case TokenKind.Number:
                                 // We should never encounter the bracketed identifier here
-                                Debug.Assert(currentTokenKind != TokenKind.BracketedIdentifier);
+                                bool insideValidBracketed = inIdentifier
+                                    && currentTokenKind == TokenKind.BracketedIdentifier;
+                                Debug.Assert(!insideValidBracketed);
 
                                 inIdentifier = false;
                                 ConsumeToken(TokenKind.Basic, i);
@@ -330,7 +337,7 @@ namespace CompactView.Lexing
                 return currentTokenKind;
 
             var stringSlice = GetCurrentStringSlice(nextTokenStart, upperSql);
-            var tokenString = stringSlice.ToString();
+            var tokenString = stringSlice.Trim().ToString();
 
             if (Keywords.Basic.Contains(tokenString))
             {

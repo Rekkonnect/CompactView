@@ -44,7 +44,7 @@
             this.btnExecute = new System.Windows.Forms.ToolStripButton();
             this.btnClear = new System.Windows.Forms.ToolStripButton();
             this.splitterHorizontal = new System.Windows.Forms.SplitContainer();
-            this.rtbQuery = new System.Windows.Forms.RichTextBox();
+            this.rtbQuery = new SqlRichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +63,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.dataGrid = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.rtbDdl = new System.Windows.Forms.RichTextBox();
+            this.rtbDdl = new SqlRichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
@@ -904,11 +904,11 @@
         private System.Windows.Forms.ImageList images;
         private System.Windows.Forms.DataGridView dataGrid;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.RichTextBox rtbDdl;
+        private SqlRichTextBox rtbDdl;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.RichTextBox rtbQuery;
+        private SqlRichTextBox rtbQuery;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label lbResult;
         private System.Windows.Forms.ToolStripButton btnExecute;
