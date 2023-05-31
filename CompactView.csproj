@@ -104,6 +104,12 @@
     <Compile Include="ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Lexing\LexExtensions.cs" />
+    <Compile Include="Lexing\SqlLexer.cs" />
+    <Compile Include="Lexing\SqlLexer.Keywords.cs" />
+    <Compile Include="Lexing\StringSlice.cs" />
+    <Compile Include="Lexing\Token.cs" />
+    <Compile Include="Lexing\TokenKind.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -126,7 +132,9 @@
     <Compile Include="SqlCeBase.cs" />
     <Compile Include="SqlCeDb.cs" />
     <Compile Include="SqlCeNativeErrors.cs" />
-    <Compile Include="SqlParser.cs" />
+    <Compile Include="SqlRichTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ToolsForm.cs">
       <SubType>Form</SubType>
     </Compile>

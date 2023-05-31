@@ -39,8 +39,6 @@ namespace CompactView
     public partial class MainForm : Form
     {
         private const string formText = "CompactView";
-        private SqlParser sqlParserQuery = new SqlParser();
-        private SqlParser sqlParserDdl = new SqlParser();
         private SqlCeDb db = new SqlCeDb();
         private Settings settings = new Settings();
 
@@ -57,8 +55,6 @@ namespace CompactView
             Text = formText;
 
             splitterHorizontal.Panel1Collapsed = true;
-            sqlParserQuery.RichTextBox = rtbQuery;
-            sqlParserDdl.RichTextBox = rtbDdl;
             LoadSettings();
 
             // Set culture code to the default current culture
@@ -392,7 +388,6 @@ namespace CompactView
                 dataGrid.ReadOnly = true;
                 dataGrid.DataSource = DatabaseInfoLocale(db.DatabaseInfo);
                 rtbDdl.Text = db.GetDatabaseDdl();
-                sqlParserDdl.Update();
             }
             else
             {   // Table node
@@ -767,20 +762,14 @@ namespace CompactView
         {
             queryPrint = btnQuery.Enabled && btnQuery.Checked && rtbQuery.Focused;
             RichTextBox rtb = queryPrint ? rtbQuery : rtbDdl;
-            rtb.Print(PrintType.PrintPreview, BeforePagePrint);
+            rtb.Print(PrintType.PrintPreview);
         }
 
         private void printMenuItem_Click(object sender, EventArgs e)
         {
             queryPrint = btnQuery.Enabled && btnQuery.Checked && rtbQuery.Focused;
             RichTextBox rtb = queryPrint ? rtbQuery : rtbDdl;
-            rtb.Print(PrintType.ShowPrintDialog, BeforePagePrint);
-        }
-
-        private void BeforePagePrint(int posIniChar, int posEndChar, PrintPageEventArgs e)
-        {
-            SqlParser parser = queryPrint ? sqlParserQuery : sqlParserDdl;
-            parser.ParseRichTextBox(posIniChar, posEndChar);
+            rtb.Print(PrintType.ShowPrintDialog);
         }
 
         private void loadSqlMenuItem_Click(object sender, EventArgs e)
@@ -984,6 +973,21 @@ namespace CompactView
         private void dataGrid_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
         {
             e.Column.FillWeight = 1;
+        }
+
+        private void commentButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ToggleCurrentComment()
+        {
+
+        }
+
+        private void ToggleSingleLineComment()
+        {
+
         }
     }
 }
