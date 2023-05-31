@@ -175,7 +175,7 @@
       <DependentUpon>ToolsForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="CHANGE.LOG" />
+    <None Include="changes\1.5.md" />
     <None Include="CompactView_TemporaryKey.pfx" />
     <None Include="COPYING" />
     <None Include="packages.config" />
