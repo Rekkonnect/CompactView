@@ -43,8 +43,10 @@
             this.btnQuery = new System.Windows.Forms.ToolStripButton();
             this.btnExecute = new System.Windows.Forms.ToolStripButton();
             this.btnClear = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.commentButton = new System.Windows.Forms.ToolStripButton();
             this.splitterHorizontal = new System.Windows.Forms.SplitContainer();
-            this.rtbQuery = new SqlRichTextBox();
+            this.rtbQuery = new CompactView.SqlRichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +65,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.dataGrid = new System.Windows.Forms.DataGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.rtbDdl = new SqlRichTextBox();
+            this.rtbDdl = new CompactView.SqlRichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
@@ -104,8 +106,6 @@
             this.aboutCompactViewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.commentButton = new System.Windows.Forms.ToolStripButton();
             this.toolBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitterHorizontal)).BeginInit();
             this.splitterHorizontal.Panel1.SuspendLayout();
@@ -244,6 +244,24 @@
             this.btnClear.Size = new System.Drawing.Size(23, 22);
             this.btnClear.Text = "Clear";
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator2.Visible = false;
+            // 
+            // commentButton
+            // 
+            this.commentButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.commentButton.Image = ((System.Drawing.Image)(resources.GetObject("commentButton.Image")));
+            this.commentButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.commentButton.Name = "commentButton";
+            this.commentButton.Size = new System.Drawing.Size(23, 22);
+            this.commentButton.Text = "toolStripButton1";
+            this.commentButton.ToolTipText = "Toggle comment";
+            this.commentButton.Visible = false;
+            this.commentButton.Click += new System.EventHandler(this.commentButton_Click);
             // 
             // splitterHorizontal
             // 
@@ -836,21 +854,6 @@
             this.copyToolStripMenuItem1.Size = new System.Drawing.Size(102, 22);
             this.copyToolStripMenuItem1.Text = "Copy";
             this.copyToolStripMenuItem1.Click += new System.EventHandler(this.copyToolStripMenuItem1_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // commentButton
-            // 
-            this.commentButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.commentButton.Image = ((System.Drawing.Image)(resources.GetObject("commentButton.Image")));
-            this.commentButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.commentButton.Name = "commentButton";
-            this.commentButton.Size = new System.Drawing.Size(23, 22);
-            this.commentButton.Text = "toolStripButton1";
-            this.commentButton.Click += new System.EventHandler(this.commentButton_Click);
             // 
             // MainForm
             // 
