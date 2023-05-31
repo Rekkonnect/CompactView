@@ -48,8 +48,8 @@ namespace CompactView
 
         protected override void OnTextChanged(EventArgs e)
         {
-            HandleTextChanged();
             base.OnTextChanged(e);
+            HandleTextChanged();
         }
 
         private void HandleTextChanged()
@@ -65,6 +65,9 @@ namespace CompactView
             _parsing = true;
 
             // Preserve the font
+            float previousZoom = ZoomFactor;
+            var previousFont = Font;
+            _auxiliaryRtb.ZoomFactor = ZoomFactor;
             _auxiliaryRtb.Font = Font;
 
             _auxiliaryRtb.SetText(Text);
@@ -79,6 +82,8 @@ namespace CompactView
 
             // The big parsing moment
             Rtf = _auxiliaryRtb.Rtf;
+            ZoomFactor = previousZoom;
+            Font = previousFont;
 
             Select(selectionStart, selectionLength);
             this.SetHScroll(hScroll);
@@ -101,7 +106,7 @@ namespace CompactView
             static AuxiliarySqlRtb()
             {
                 SetColorMapping(TokenKind.Basic, Color.Black);
-                SetColorMapping(TokenKind.Identifier, 192, 0, 128);
+                SetColorMapping(TokenKind.Identifier, 96, 0, 128);
                 SetColorMapping(TokenKind.BracketedIdentifier, 64, 0, 128);
                 SetColorMapping(TokenKind.Keyword, 0, 0, 255);
                 SetColorMapping(TokenKind.Type, 0, 128, 128);
@@ -247,8 +252,6 @@ namespace CompactView
 
             public RtfStringBuilder EscapeAppend(StringSlice slice)
             {
-                bool escaped = false;
-
                 for (int i = 0; i < slice.Length; i++)
                 {
                     char c = slice[i];
@@ -257,21 +260,11 @@ namespace CompactView
                         case '\\':
                         case '{':
                         case '}':
-                            if (escaped)
-                            {
-                                _stringBuilder.Append(@"\f1");
-                                escaped = true;
-                            }
                             _stringBuilder.Append('\\');
                             _stringBuilder.Append(c);
                             break;
 
                         default:
-                            if (escaped)
-                            {
-                                _stringBuilder.Append(@"\f0");
-                                escaped = false;
-                            }
                             _stringBuilder.Append(c);
                             break;
                     }

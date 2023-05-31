@@ -20,6 +20,7 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Remoting.Activation;
 
 namespace CompactView.Lexing
 {
@@ -101,7 +102,7 @@ namespace CompactView.Lexing
                 switch (currentChar)
                 {
                     case '\n':
-                        inSingleLineComment = false;
+                        HandleWhitespace();
                         continue;
 
                     case '*':
@@ -116,9 +117,12 @@ namespace CompactView.Lexing
                                     i++;
                                 }
                             }
+
+                            // Only handle the * character if we are in a comment
+                            continue;
                         }
 
-                        continue;
+                        break;
                 }
 
                 // Do not proceed to evaluate the character if we are in a comment
@@ -172,6 +176,10 @@ namespace CompactView.Lexing
                         continue;
 
                     case '[':
+                        // Error recovery
+                        ConsumeIfRunningLiteral(TokenKind.Basic, i);
+                        // END Error recovery
+
                         if (squareBracketNest == 0)
                         {
                             ConsumeToken(TokenKind.BracketedIdentifier, i);
@@ -182,6 +190,10 @@ namespace CompactView.Lexing
                         continue;
 
                     case ']':
+                        // Error recovery
+                        ConsumeIfRunningLiteral(TokenKind.Basic, i);
+                        // END Error recovery
+
                         if (squareBracketNest > 0)
                         {
                             squareBracketNest--;
@@ -211,6 +223,7 @@ namespace CompactView.Lexing
                             // the dot can be a valid character inside it
                             if (squareBracketNest == 0)
                             {
+                                inIdentifier = false;
                                 ConsumeToken(TokenKind.Basic, i);
                             }
                         }
@@ -219,9 +232,7 @@ namespace CompactView.Lexing
 
                     case ' ':
                     case '\t':
-                        inNumber = false;
-                        inIdentifier = false;
-
+                        HandleWhitespace();
                         continue;
 
                     default:
@@ -233,16 +244,36 @@ namespace CompactView.Lexing
 
                         inNumber = false;
 
-                        if (char.IsLetter(currentChar) || currentChar == '_')
+                        bool identifierCharacter =
+                            char.IsLetter(currentChar) || currentChar == '_';
+
+                        bool shouldConsume = false;
+
+                        var nextTokenKind = TokenKind.Basic;
+                        if (identifierCharacter)
                         {
+                            nextTokenKind = TokenKind.Identifier;
+
                             if (!inIdentifier)
                             {
-                                ConsumeToken(TokenKind.Identifier, i);
-                                inIdentifier = true;
+                                shouldConsume = true;
                             }
-                            continue;
+                        }
+                        else
+                        {
+                            if (currentTokenKind != TokenKind.Basic)
+                            {
+                                shouldConsume = true;
+                            }
                         }
 
+                        if (shouldConsume)
+                        {
+                            ConsumeToken(nextTokenKind, i);
+                        }
+                        inIdentifier = identifierCharacter;
+
+                        /*
                         // Must be some other token, like an operator or a random invalid symbol
                         switch (currentTokenKind)
                         {
@@ -260,10 +291,9 @@ namespace CompactView.Lexing
                                     continue;
                                 }
 
-                                inIdentifier = false;
-                                ConsumeToken(TokenKind.Basic, i);
                                 break;
                         }
+                        */
 
                         continue;
                 }
@@ -272,6 +302,13 @@ namespace CompactView.Lexing
             ConsumeToken(TokenKind.Undetermined, chars.Length);
 
             return tokens;
+        }
+
+        private void HandleWhitespace()
+        {
+            inSingleLineComment = false;
+            inNumber = false;
+            inIdentifier = false;
         }
 
         private void HandleNumberCharacter(int currentIndex)
@@ -293,15 +330,20 @@ namespace CompactView.Lexing
 
         private bool CanStartDottedNumberToken()
         {
-            return CanStartDottedNumberToken(tokens.Count - 1);
+            return CanStartDottedNumberToken(tokens.Count);
         }
         private bool CanStartDottedNumberToken(int tokenIndex)
         {
             if (tokenIndex < 0)
                 return false;
 
-            var token = tokens[tokenIndex];
-            var tokenKind = token.Kind;
+            var tokenKind = currentTokenKind;
+
+            if (tokenIndex < tokens.Count)
+            {
+                var token = tokens[tokenIndex];
+                tokenKind = token.Kind;
+            }
 
             switch (tokenKind)
             {
@@ -316,6 +358,17 @@ namespace CompactView.Lexing
 
                 default:
                     return false;
+            }
+        }
+
+        private void ConsumeIfRunningLiteral(TokenKind nextTokenKind, int nextTokenStart)
+        {
+            switch (currentTokenKind)
+            {
+                case TokenKind.Number:
+                case TokenKind.String:
+                    ConsumeToken(nextTokenKind, nextTokenStart);
+                    break;
             }
         }
 
