@@ -132,7 +132,6 @@
     <Compile Include="SqlCeBase.cs" />
     <Compile Include="SqlCeDb.cs" />
     <Compile Include="SqlCeNativeErrors.cs" />
-    <Compile Include="SqlParser.cs" />
     <Compile Include="SqlRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>

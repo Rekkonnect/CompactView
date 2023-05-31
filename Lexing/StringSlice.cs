@@ -22,7 +22,6 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace CompactView.Lexing
 {
@@ -41,6 +40,11 @@ namespace CompactView.Lexing
             Source = source;
             Offset = offset;
             Length = length;
+        }
+
+        public bool MatchesEnd(StringSlice other)
+        {
+            return LastIndex == other.LastIndex;
         }
 
         // No validation for performance
@@ -136,6 +140,10 @@ namespace CompactView.Lexing
 
                 int nextIndex = _sourceSlice.IndexOf('\n', _lineStartIndex);
                 if (nextIndex < 0)
+                {
+                    nextIndex = _sourceSlice.Length;
+                }
+                if (nextIndex > _sourceSlice.Length)
                 {
                     nextIndex = _sourceSlice.Length;
                 }

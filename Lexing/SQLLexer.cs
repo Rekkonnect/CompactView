@@ -252,7 +252,13 @@ namespace CompactView.Lexing
                                 // We should never encounter the bracketed identifier here
                                 bool insideValidBracketed = inIdentifier
                                     && currentTokenKind == TokenKind.BracketedIdentifier;
-                                Debug.Assert(!insideValidBracketed);
+
+                                if (insideValidBracketed)
+                                {
+                                    // This is an unexpected scenario in a valid SQL statement
+                                    // but it can trigger in very corrupted scenarios
+                                    continue;
+                                }
 
                                 inIdentifier = false;
                                 ConsumeToken(TokenKind.Basic, i);
@@ -262,6 +268,8 @@ namespace CompactView.Lexing
                         continue;
                 }
             }
+
+            ConsumeToken(TokenKind.Undetermined, chars.Length);
 
             return tokens;
         }

@@ -32,22 +32,40 @@ namespace CompactView
 
         private bool _parsing = false;
 
+        public override string Text
+        {
+            get => base.Text;
+            set
+            {
+                base.Text = value;
+                HandleTextChanged();
+            }
+        }
+
         public SqlRichTextBox()
         {
         }
 
         protected override void OnTextChanged(EventArgs e)
         {
+            HandleTextChanged();
+            base.OnTextChanged(e);
+        }
+
+        private void HandleTextChanged()
+        {
             if (_parsing)
                 return;
 
-            base.OnTextChanged(e);
             ProcessViaAuxiliary();
         }
 
         private void ProcessViaAuxiliary()
         {
             _parsing = true;
+
+            // Preserve the font
+            _auxiliaryRtb.Font = Font;
 
             _auxiliaryRtb.SetText(Text);
 
@@ -82,17 +100,27 @@ namespace CompactView
 
             static AuxiliarySqlRtb()
             {
-                _colorMappings[(int)TokenKind.Basic] = Color.Black;
-                _colorMappings[(int)TokenKind.Identifier] = Color.FromArgb(192, 0, 128);
-                _colorMappings[(int)TokenKind.BracketedIdentifier] = Color.FromArgb(64, 0, 128);
-                _colorMappings[(int)TokenKind.Keyword] = Color.FromArgb(0, 0, 255);
-                _colorMappings[(int)TokenKind.Type] = Color.FromArgb(0, 128, 128);
-                _colorMappings[(int)TokenKind.Number] = Color.FromArgb(255, 0, 0);
-                _colorMappings[(int)TokenKind.String] = Color.FromArgb(0, 128, 0);
-                _colorMappings[(int)TokenKind.SingleLineComment] = Color.FromArgb(0, 168, 32);
-                _colorMappings[(int)TokenKind.MultiLineComment] = Color.FromArgb(0, 168, 32);
+                SetColorMapping(TokenKind.Basic, Color.Black);
+                SetColorMapping(TokenKind.Identifier, 192, 0, 128);
+                SetColorMapping(TokenKind.BracketedIdentifier, 64, 0, 128);
+                SetColorMapping(TokenKind.Keyword, 0, 0, 255);
+                SetColorMapping(TokenKind.Type, 0, 128, 128);
+                SetColorMapping(TokenKind.Number, 255, 0, 0);
+                SetColorMapping(TokenKind.String, 0, 128, 0);
+                SetColorMapping(TokenKind.SingleLineComment, 0, 168, 32);
+                SetColorMapping(TokenKind.MultiLineComment, 0, 168, 32);
 
                 _rtfHeader = GenerateRtfHeader();
+            }
+
+            private static void SetColorMapping(TokenKind kind, Color color)
+            {
+                _colorMappings[(int)kind] = color;
+            }
+            private static void SetColorMapping(TokenKind kind, int r, int g, int b)
+            {
+                var color = Color.FromArgb(r, g, b);
+                SetColorMapping(kind, color);
             }
 
             public void SetText(string text)
@@ -113,11 +141,13 @@ namespace CompactView
                 foreach (var token in tokenized)
                 {
                     builder.AppendUnprocessed(@"\cf");
-                    builder.Append((int)token.Kind);
+                    builder.Append((int)token.Kind + 1);
                     builder.Append(' ');
                     builder.AppendToken(token);
                 }
 
+                builder.AppendUnprocessed("\\par\n");
+                builder.Append('}');
                 Rtf = builder.ToString();
             }
 
@@ -202,9 +232,49 @@ namespace CompactView
             {
                 foreach (var line in stringSlice.EnumerateLines())
                 {
-                    _stringBuilder.AppendSlice(line);
-                    _stringBuilder.Append(@"\par");
-                    _stringBuilder.Append('\n');
+                    EscapeAppend(line);
+
+                    bool isTrailingText = line.MatchesEnd(stringSlice);
+                    if (!isTrailingText)
+                    {
+                        _stringBuilder.Append(@"\par");
+                        _stringBuilder.Append('\n');
+                    }
+                }
+
+                return this;
+            }
+
+            public RtfStringBuilder EscapeAppend(StringSlice slice)
+            {
+                bool escaped = false;
+
+                for (int i = 0; i < slice.Length; i++)
+                {
+                    char c = slice[i];
+                    switch (c)
+                    {
+                        case '\\':
+                        case '{':
+                        case '}':
+                            if (escaped)
+                            {
+                                _stringBuilder.Append(@"\f1");
+                                escaped = true;
+                            }
+                            _stringBuilder.Append('\\');
+                            _stringBuilder.Append(c);
+                            break;
+
+                        default:
+                            if (escaped)
+                            {
+                                _stringBuilder.Append(@"\f0");
+                                escaped = false;
+                            }
+                            _stringBuilder.Append(c);
+                            break;
+                    }
                 }
 
                 return this;
