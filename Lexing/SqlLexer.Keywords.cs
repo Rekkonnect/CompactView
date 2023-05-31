@@ -24,7 +24,7 @@ namespace CompactView.Lexing
 {
     public partial class SqlLexer
     {
-        public static class Keywords
+        public static class KnownWords
         {
             private static readonly string[] keywordsArray = new[]
             {
@@ -48,20 +48,81 @@ namespace CompactView.Lexing
                 "BIGINT", "INT", "INTEGER", "SMALLINT", "TINYINT", "BIT", "NUMERIC", "DECIMAL", "DEC", "MONEY", "FLOAT", "REAL", "DATETIME", "NATIONAL CHARACTER",
                 "NCHAR", "NATIONAL CHARACTER VARYING", "NVARCHAR", "NTEXT", "BINARY", "VARBINARY", "IMAGE", "UNIQUEIDENTIFIER", "TIMESTAMP", "ROWVERSION"
             };
+            private static readonly string[] functionsArray = new[]
+            {
+                // String Functions
+                "NCHAR",
+                "CHARINDEX",
+                "LEN",
+                "LOWER",
+                "LTRIM",
+                "PATINDEX",
+                "REPLACE",
+                "REPLICATE",
+                "RTRIM",
+                "SPACE",
+                "STR",
+                "STUFF",
+                "SUBSTRING",
+                "UNICODE",
+                "UPPER",
 
-            public static readonly StringCollection Basic;
+                // Math Functions
+                "ABS",
+                "ACOS",
+                "ASIN",
+                "ATAN",
+                "ATN2",
+                "CEILING",
+                "COS",
+                "COT",
+                "DEGREES",
+                "EXP",
+                "FLOOR",
+                "LOG",
+                "LOG10",
+                "PI",
+                "POWER",
+                "RADIANS",
+                "RAND",
+                "ROUND",
+                "SIGN",
+                "SIN",
+                "SQRT",
+                "TAN",
+
+                // Date Functions
+                "DATEDIFF",
+                "DATEPART",
+                "GETDATE",
+
+                // Advanced Functions
+                "COALESCE",
+                "DATALENGTH",
+                "@@IDENTITY",
+            };
+
+            public static readonly StringCollection Keywords;
             public static readonly StringCollection Types;
+            public static readonly StringCollection Functions;
 
             public static readonly StringCollection All;
 
-            static Keywords()
+            static KnownWords()
             {
-                Basic = StringCollectionFromRange(keywordsArray);
+                Keywords = StringCollectionFromRange(keywordsArray);
                 Types = StringCollectionFromRange(typesArray);
+                Functions = StringCollectionFromRange(functionsArray);
+
+                foreach (var keyword in keywordsArray)
+                {
+                    Functions.Remove(keyword);
+                }
 
                 All = new StringCollection();
                 All.AddRange(keywordsArray);
                 All.AddRange(typesArray);
+                All.AddRange(functionsArray);
             }
 
             private static StringCollection StringCollectionFromRange(string[] range)

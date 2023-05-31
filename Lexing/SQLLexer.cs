@@ -400,13 +400,17 @@ namespace CompactView.Lexing
             var stringSlice = GetCurrentStringSlice(nextTokenStart, upperSql);
             var tokenString = stringSlice.Trim().ToString();
 
-            if (Keywords.Basic.Contains(tokenString))
+            if (KnownWords.Keywords.Contains(tokenString))
             {
                 return TokenKind.Keyword;
             }
-            if (Keywords.Types.Contains(tokenString))
+            if (KnownWords.Types.Contains(tokenString))
             {
                 return TokenKind.Type;
+            }
+            if (KnownWords.Functions.Contains(tokenString))
+            {
+                return TokenKind.KnownFunction;
             }
 
             return TokenKind.Identifier;

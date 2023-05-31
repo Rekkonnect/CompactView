@@ -34,5 +34,6 @@ namespace CompactView.Lexing
         String,
         SingleLineComment,
         MultiLineComment,
+        KnownFunction,
     }
 }

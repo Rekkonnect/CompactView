@@ -99,7 +99,7 @@ namespace CompactView
         private sealed class AuxiliarySqlRtb : RichTextBox
         {
             private static readonly Color[] _colorMappings =
-                new Color[(int)TokenKind.MultiLineComment + 1];
+                new Color[(int)TokenKind.KnownFunction + 1];
 
             private static readonly string _rtfHeader;
 
@@ -114,6 +114,7 @@ namespace CompactView
                 SetColorMapping(TokenKind.String, 0, 128, 0);
                 SetColorMapping(TokenKind.SingleLineComment, 0, 168, 32);
                 SetColorMapping(TokenKind.MultiLineComment, 0, 168, 32);
+                SetColorMapping(TokenKind.KnownFunction, 128, 96, 255);
 
                 _rtfHeader = GenerateRtfHeader();
             }
