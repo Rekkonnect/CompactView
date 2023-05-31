@@ -19,8 +19,6 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.Remoting.Activation;
 
 namespace CompactView.Lexing
 {
