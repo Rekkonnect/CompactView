@@ -954,17 +954,21 @@ namespace CompactView
         private void dataGrid_MouseDown(object sender, MouseEventArgs e)
         {
             DataGridView.HitTestInfo hit = dataGrid.HitTest(e.X, e.Y);
-            if (hit.Type == DataGridViewHitTestType.Cell)
+            switch (hit.Type)
             {
-                dataGrid.ContextMenuStrip = contextMenuStrip2;
-                dataGrid.CurrentCell = dataGrid[hit.ColumnIndex, hit.RowIndex];
-                foreach (DataGridViewCell cell in dataGrid.SelectedCells)
-                    if (cell != dataGrid.CurrentCell)
-                        cell.Selected = false;
-            }
-            else
-            {
-                dataGrid.ContextMenuStrip = null;
+                case DataGridViewHitTestType.Cell:
+                {
+                    dataGrid.ContextMenuStrip = dataGridMenuStrip;
+                    dataGrid.CurrentCell = dataGrid[hit.ColumnIndex, hit.RowIndex];
+                    foreach (DataGridViewCell cell in dataGrid.SelectedCells)
+                        if (cell != dataGrid.CurrentCell)
+                            cell.Selected = false;
+                    break;
+                }
+
+                default:
+                    dataGrid.ContextMenuStrip = columnHeaderMenuStrip;
+                    break;
             }
         }
 
@@ -974,11 +978,17 @@ namespace CompactView
                 return;
 
             string tableName = treeDb.SelectedNode.Text;
-            string columnName = dataGrid.Columns[e.ColumnIndex].HeaderCell.Value.ToString();
-            SortOrder order = dataGrid.Columns[e.ColumnIndex].HeaderCell.SortGlyphDirection;
+            var column = dataGrid.Columns[e.ColumnIndex];
+            string columnName = column.HeaderCell.Value.ToString();
+            SortOrder order = column.HeaderCell.SortGlyphDirection;
             string dbtype = db.GetColumnDataType(tableName, columnName);
-            if (dbtype == "ntext" || dbtype == "image")
-                return;
+
+            switch (dbtype)
+            {
+                case "ntext":
+                case "image":
+                    return;
+            }
 
             dataGrid.SuspendLayout();
             dataGrid.Columns.Clear();
@@ -994,11 +1004,14 @@ namespace CompactView
                     order = SortOrder.Ascending;
                     break;
             }
+
             dataGrid.DataSource = db.GetTableData(tableName, columnName, order);
-            dataGrid.Columns[columnName].SortMode = DataGridViewColumnSortMode.Programmatic;
-            dataGrid.Columns[columnName].HeaderCell.SortGlyphDirection = order;
+            column = dataGrid.Columns[columnName];
+            column.SortMode = DataGridViewColumnSortMode.Programmatic;
+            column.HeaderCell.SortGlyphDirection = order;
             if (e.Button == MouseButtons.Right)
-                dataGrid.Columns[columnName].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+
             dataGrid.ResumeLayout();
         }
 
@@ -1020,6 +1033,20 @@ namespace CompactView
         private void ToggleSingleLineComment()
         {
 
+        }
+
+        private void copyAllHeaderNamesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var headerTexts = dataGrid.Columns.Cast<DataGridViewColumn>()
+                .Select(s => s.HeaderText);
+            var headers = string.Join("\n", headerTexts);
+            Clipboard.SetText(headers);
+        }
+
+        private void copyHeaderNameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string headerText = dataGrid.Columns[dataGrid.CurrentCell.ColumnIndex].HeaderText;
+            Clipboard.SetText(headerText);
         }
     }
 }

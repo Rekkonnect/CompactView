@@ -78,7 +78,6 @@ namespace CompactView
             int selectionStart = SelectionStart;
 
             this.SetRedraw(false);
-            //Select(0, TextLength);
 
             // The big parsing moment
             Rtf = _auxiliaryRtb.Rtf;
