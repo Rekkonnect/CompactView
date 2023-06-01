@@ -21,11 +21,9 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 using System;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Drawing.Printing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
@@ -716,7 +714,41 @@ namespace CompactView
 
         private void SelectStatement(Match statement)
         {
-            rtbQuery.Select(statement.Index, statement.Length);
+            string sql = statement.Value;
+            int startIndex = Math.Max(0, IndexOfNonWhitespace(sql));
+            int endIndex = Math.Min(sql.Length - 1, LastIndexOfNonWhitespace(sql));
+            int length = endIndex - startIndex + 1;
+
+            rtbQuery.Select(statement.Index + startIndex, length);
+        }
+
+        private static int IndexOfNonWhitespace(string text)
+        {
+            int index = 0;
+            while (index < text.Length)
+            {
+                if (!char.IsWhiteSpace(text[index]))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+            return -1;
+        }
+        private static int LastIndexOfNonWhitespace(string text)
+        {
+            int index = text.Length - 1;
+            while (index >= 0)
+            {
+                if (!char.IsWhiteSpace(text[index]))
+                {
+                    return index;
+                }
+
+                index--;
+            }
+            return -1;
         }
 
         private static bool ShouldSelectStatement(Match statement, int selectedIndex)
