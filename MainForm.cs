@@ -226,6 +226,15 @@ namespace CompactView
                 {
                     Text = string.Concat(formText, " - ", db.FileName);
 
+                    // EF TEST
+
+                    using (var context = new SqlCeContext(db.Connection))
+                    {
+
+                    }
+
+                    // END EF TEST
+
                     // Fill tree with database name and table names
                     treeDb.BeginUpdate();
                     treeDb.Nodes.Clear();

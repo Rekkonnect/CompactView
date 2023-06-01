@@ -41,13 +41,13 @@ namespace CompactView
             culture = CultureInfo.InvariantCulture;
         }
 
-        new public bool Open(string databaseFile, string password)
+        public override bool Open(string databaseFile, string password)
         {
             tablesDdl.Clear();
             return base.Open(databaseFile, password);
         }
 
-        new public void Close()
+        public override void Close()
         {
             ResetDdl();
             base.Close();
@@ -89,9 +89,27 @@ namespace CompactView
 
         public object GetTableData(string tableName, string orderColumn, SortOrder sortOrder)
         {
-            string sql = string.IsNullOrEmpty(orderColumn) || (sortOrder == SortOrder.None) ? $"SELECT * FROM [{tableName}]" :
-                $"SELECT * FROM [{tableName}] ORDER BY [{orderColumn}] {(sortOrder == SortOrder.Ascending ? "ASC" : "DESC")}";
+            var sortOrderString = GetSortOrderString(sortOrder);
+            var orderByClause = "";
+            if (!string.IsNullOrEmpty(orderColumn))
+            {
+                orderByClause = $"ORDER BY [{orderColumn}] {sortOrderString}";
+            }
+            string sql = $"SELECT * FROM [{tableName}] {orderByClause}";
             return ExecuteSql(sql, true);
+        }
+
+        private static string GetSortOrderString(SortOrder sortOrder)
+        {
+            switch (sortOrder)
+            {
+                case SortOrder.Ascending:
+                    return "ASC";
+                case SortOrder.Descending:
+                    return "DESC";
+                default:
+                    return null;
+            }
         }
 
         public void ResetDdl()
@@ -108,18 +126,30 @@ namespace CompactView
             string sWhere = tableName == null ? string.Empty : $"WHERE c.TABLE_NAME = '{tableName}' ";
             var nodes = new List<TreeNode>();
             DbCommand cmd = Connection.CreateCommand();
-            cmd.CommandText = "SELECT c.COLUMN_NAME, c.TABLE_NAME, t.CONSTRAINT_TYPE FROM INFORMATION_SCHEMA.COLUMNS AS c " +
-                "LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u ON u.TABLE_NAME = c.TABLE_NAME AND u.COLUMN_NAME = c.COLUMN_NAME " +
-                "LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS t ON t.CONSTRAINT_NAME = u.CONSTRAINT_NAME AND t.TABLE_NAME = c.TABLE_NAME " +
-                "ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION";
+            cmd.CommandText = @"
+SELECT c.COLUMN_NAME, c.TABLE_NAME, t.CONSTRAINT_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u
+    ON u.TABLE_NAME = c.TABLE_NAME AND u.COLUMN_NAME = c.COLUMN_NAME
+LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS t
+    ON t.CONSTRAINT_NAME = u.CONSTRAINT_NAME AND t.TABLE_NAME = c.TABLE_NAME
+ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
+";
 
-            cmd.CommandText = "SELECT c.COLUMN_NAME, c.TABLE_NAME, i.PRIMARY_KEY, t.UNIQUE_CONSTRAINT_TABLE_NAME + '@' + u2.COLUMN_NAME " +
-                "FROM INFORMATION_SCHEMA.COLUMNS AS c " +
-                "LEFT JOIN INFORMATION_SCHEMA.INDEXES AS i ON i.TABLE_NAME = c.TABLE_NAME AND i.COLUMN_NAME = c.COLUMN_NAME " +
-                "LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u ON u.TABLE_NAME = c.TABLE_NAME AND u.COLUMN_NAME = c.COLUMN_NAME " +
-                "LEFT JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS t ON t.CONSTRAINT_TABLE_NAME = c.TABLE_NAME AND t.CONSTRAINT_NAME = u.CONSTRAINT_NAME " +
-                "LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u2 ON u2.TABLE_NAME = t.UNIQUE_CONSTRAINT_TABLE_NAME AND u2.CONSTRAINT_NAME = t.UNIQUE_CONSTRAINT_NAME " +
-                sWhere + "ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION";
+            cmd.CommandText = $@"
+SELECT c.COLUMN_NAME, c.TABLE_NAME, i.PRIMARY_KEY, t.UNIQUE_CONSTRAINT_TABLE_NAME + '@' + u2.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS AS c
+LEFT JOIN INFORMATION_SCHEMA.INDEXES AS i
+    ON i.TABLE_NAME = c.TABLE_NAME AND i.COLUMN_NAME = c.COLUMN_NAME
+LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u
+    ON u.TABLE_NAME = c.TABLE_NAME AND u.COLUMN_NAME = c.COLUMN_NAME
+LEFT JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS t
+    ON t.CONSTRAINT_TABLE_NAME = c.TABLE_NAME AND t.CONSTRAINT_NAME = u.CONSTRAINT_NAME
+LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u2
+    ON u2.TABLE_NAME = t.UNIQUE_CONSTRAINT_TABLE_NAME AND u2.CONSTRAINT_NAME = t.UNIQUE_CONSTRAINT_NAME
+{sWhere}
+ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
+";
             DbDataReader dr = cmd.ExecuteReader();
 
             TreeNode node = null;
