@@ -377,6 +377,12 @@ namespace CompactView
             SaveSettings();
         }
 
+        private void treeDb_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = treeDb.HitTest(e.X, e.Y);
+            treeDb.SelectedNode = hitTest.Node;
+        }
+
         private void treeDb_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (!db.IsOpen)
@@ -1088,6 +1094,18 @@ namespace CompactView
         {
             string headerText = dataGrid.ClickedColumn.HeaderText;
             InsertIntoQuery(headerText);
+        }
+
+        private void copyNameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string name = treeDb.SelectedNode.Text;
+            Clipboard.SetText(name);
+        }
+
+        private void insertNameIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string name = treeDb.SelectedNode.Text;
+            InsertIntoQuery(name);
         }
     }
 }

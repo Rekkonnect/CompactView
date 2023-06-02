@@ -30,8 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.toolBar = new System.Windows.Forms.ToolStrip();
             this.btnOpen = new System.Windows.Forms.ToolStripButton();
             this.cbReadOnly = new System.Windows.Forms.ToolStripComboBox();
@@ -60,6 +60,9 @@
             this.lbResult = new System.Windows.Forms.Label();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.treeDb = new System.Windows.Forms.TreeView();
+            this.databaseListContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.insertNameIntoQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.images = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -122,6 +125,7 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.databaseListContextMenuStrip.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).BeginInit();
@@ -431,6 +435,7 @@
             // treeDb
             // 
             this.treeDb.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.treeDb.ContextMenuStrip = this.databaseListContextMenuStrip;
             this.treeDb.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeDb.HideSelection = false;
             this.treeDb.ImageIndex = 0;
@@ -443,6 +448,29 @@
             this.treeDb.Size = new System.Drawing.Size(172, 157);
             this.treeDb.TabIndex = 1;
             this.treeDb.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeDb_AfterSelect);
+            this.treeDb.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeDb_MouseDown);
+            // 
+            // databaseListContextMenuStrip
+            // 
+            this.databaseListContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyNameToolStripMenuItem,
+            this.insertNameIntoQueryToolStripMenuItem});
+            this.databaseListContextMenuStrip.Name = "databaseListContextMenuStrip";
+            this.databaseListContextMenuStrip.Size = new System.Drawing.Size(198, 48);
+            // 
+            // copyNameToolStripMenuItem
+            // 
+            this.copyNameToolStripMenuItem.Name = "copyNameToolStripMenuItem";
+            this.copyNameToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.copyNameToolStripMenuItem.Text = "Copy Name";
+            this.copyNameToolStripMenuItem.Click += new System.EventHandler(this.copyNameToolStripMenuItem_Click);
+            // 
+            // insertNameIntoQueryToolStripMenuItem
+            // 
+            this.insertNameIntoQueryToolStripMenuItem.Name = "insertNameIntoQueryToolStripMenuItem";
+            this.insertNameIntoQueryToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.insertNameIntoQueryToolStripMenuItem.Text = "Insert Name Into Query";
+            this.insertNameIntoQueryToolStripMenuItem.Click += new System.EventHandler(this.insertNameIntoQueryToolStripMenuItem_Click);
             // 
             // images
             // 
@@ -476,19 +504,19 @@
             // 
             // dataGrid
             // 
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.LemonChiffon;
-            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
-            this.dataGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.LemonChiffon;
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
+            this.dataGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
             this.dataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.LightYellow;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGrid.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.LightYellow;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGrid.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGrid.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dataGrid.Location = new System.Drawing.Point(3, 3);
@@ -869,7 +897,7 @@
             this.toolStripSeparator9,
             this.insertColumnNameIntoQueryToolStripMenuItem});
             this.columnHeaderMenuStrip.Name = "columnHeaderMenuStrip";
-            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(244, 98);
+            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(244, 76);
             // 
             // copyColumnNameToolStripMenuItem
             // 
@@ -926,6 +954,7 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.databaseListContextMenuStrip.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGrid)).EndInit();
@@ -1020,6 +1049,9 @@
         private System.Windows.Forms.ToolStripMenuItem copyAllColumnNamesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem insertColumnNameIntoQueryToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip databaseListContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyNameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem insertNameIntoQueryToolStripMenuItem;
     }
 }
 
