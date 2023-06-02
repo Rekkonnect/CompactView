@@ -22,25 +22,41 @@ using System.Windows.Forms;
 
 namespace CompactView
 {
-    public class HeaderHandlerGridView : DoubleBufferedDataGridView
+    public static class ControlUpdatingExtensions
     {
-        public DataGridViewColumn ClickedColumn { get; private set; }
-
-        protected override void OnMouseDown(MouseEventArgs e)
+        public static void BeginUpdate(this Control control)
         {
-            var hitTest = HitTest(e.X, e.Y);
-            switch (hitTest.Type)
+            switch (control)
             {
-                case DataGridViewHitTestType.ColumnHeader:
-                    ClickedColumn = Columns[hitTest.ColumnIndex];
+                case ListView listView:
+                    listView.BeginUpdate();
                     break;
 
-                default:
-                    ClickedColumn = null;
+                case ComboBox comboBox:
+                    comboBox.BeginUpdate();
+                    break;
+
+                case ListBox listBox:
+                    listBox.BeginUpdate();
                     break;
             }
+        }
+        public static void EndUpdate(this Control control)
+        {
+            switch (control)
+            {
+                case ListView listView:
+                    listView.EndUpdate();
+                    break;
 
-            base.OnMouseDown(e);
+                case ComboBox comboBox:
+                    comboBox.EndUpdate();
+                    break;
+
+                case ListBox listBox:
+                    listBox.EndUpdate();
+                    break;
+            }
         }
     }
 }

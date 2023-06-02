@@ -22,25 +22,11 @@ using System.Windows.Forms;
 
 namespace CompactView
 {
-    public class HeaderHandlerGridView : DoubleBufferedDataGridView
+    public class DoubleBufferedDataGridView : DataGridView
     {
-        public DataGridViewColumn ClickedColumn { get; private set; }
-
-        protected override void OnMouseDown(MouseEventArgs e)
+        public DoubleBufferedDataGridView()
         {
-            var hitTest = HitTest(e.X, e.Y);
-            switch (hitTest.Type)
-            {
-                case DataGridViewHitTestType.ColumnHeader:
-                    ClickedColumn = Columns[hitTest.ColumnIndex];
-                    break;
-
-                default:
-                    ClickedColumn = null;
-                    break;
-            }
-
-            base.OnMouseDown(e);
+            DoubleBuffered = true; 
         }
     }
 }

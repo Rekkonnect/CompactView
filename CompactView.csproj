@@ -84,7 +84,11 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ColorComboBox.cs" />
+    <Compile Include="ControlUpdatingExtensions.cs" />
     <Compile Include="DataSetExtensions.cs" />
+    <Compile Include="DoubleBufferedDataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,6 +111,7 @@
     <Compile Include="ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LayoutSuspension.cs" />
     <Compile Include="Lexing\LexExtensions.cs" />
     <Compile Include="Lexing\SqlLexer.cs" />
     <Compile Include="Lexing\SqlLexer.Keywords.cs" />
@@ -144,6 +149,7 @@
     <Compile Include="ToolsForm.designer.cs">
       <DependentUpon>ToolsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UpdateSection.cs" />
     <Compile Include="Version.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>

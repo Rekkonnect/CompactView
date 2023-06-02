@@ -18,29 +18,32 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
+using System;
 using System.Windows.Forms;
 
 namespace CompactView
 {
-    public class HeaderHandlerGridView : DoubleBufferedDataGridView
+    public class UpdateSection : IDisposable
     {
-        public DataGridViewColumn ClickedColumn { get; private set; }
+        public Control Control { get; }
 
-        protected override void OnMouseDown(MouseEventArgs e)
+        public UpdateSection(Control control)
         {
-            var hitTest = HitTest(e.X, e.Y);
-            switch (hitTest.Type)
-            {
-                case DataGridViewHitTestType.ColumnHeader:
-                    ClickedColumn = Columns[hitTest.ColumnIndex];
-                    break;
+            Control = control;
+            Control.BeginUpdate();
+        }
 
-                default:
-                    ClickedColumn = null;
-                    break;
-            }
+        void IDisposable.Dispose()
+        {
+            Control.EndUpdate();
+        }
+    }
 
-            base.OnMouseDown(e);
+    public static class UpdateSectionExtensions
+    {
+        public static UpdateSection UpdateSection(this Control control)
+        {
+            return new UpdateSection(control);
         }
     }
 }
