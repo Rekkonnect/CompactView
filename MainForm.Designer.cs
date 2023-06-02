@@ -63,7 +63,7 @@
             this.images = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.dataGrid = new HeaderHandlerGridView();
+            this.dataGrid = new CompactView.HeaderHandlerGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.rtbDdl = new CompactView.SqlRichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -107,10 +107,10 @@
             this.dataGridMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.columnHeaderMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.copyHeaderNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.copyAllHeaderNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyColumnNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyAllColumnNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.insertIntoQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.insertColumnNameIntoQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitterHorizontal)).BeginInit();
             this.splitterHorizontal.Panel1.SuspendLayout();
@@ -864,38 +864,38 @@
             // columnHeaderMenuStrip
             // 
             this.columnHeaderMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.copyHeaderNameToolStripMenuItem,
-            this.copyAllHeaderNamesToolStripMenuItem,
+            this.copyColumnNameToolStripMenuItem,
+            this.copyAllColumnNamesToolStripMenuItem,
             this.toolStripSeparator9,
-            this.insertIntoQueryToolStripMenuItem});
+            this.insertColumnNameIntoQueryToolStripMenuItem});
             this.columnHeaderMenuStrip.Name = "columnHeaderMenuStrip";
-            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(201, 98);
+            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(244, 98);
             // 
-            // copyHeaderNameToolStripMenuItem
+            // copyColumnNameToolStripMenuItem
             // 
-            this.copyHeaderNameToolStripMenuItem.Name = "copyHeaderNameToolStripMenuItem";
-            this.copyHeaderNameToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.copyHeaderNameToolStripMenuItem.Text = "Copy Header Name";
-            this.copyHeaderNameToolStripMenuItem.Click += new System.EventHandler(this.copyHeaderNameToolStripMenuItem_Click);
+            this.copyColumnNameToolStripMenuItem.Name = "copyColumnNameToolStripMenuItem";
+            this.copyColumnNameToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.copyColumnNameToolStripMenuItem.Text = "Copy Column Name";
+            this.copyColumnNameToolStripMenuItem.Click += new System.EventHandler(this.copyColumnNameToolStripMenuItem_Click);
             // 
-            // copyAllHeaderNamesToolStripMenuItem
+            // copyAllColumnNamesToolStripMenuItem
             // 
-            this.copyAllHeaderNamesToolStripMenuItem.Name = "copyAllHeaderNamesToolStripMenuItem";
-            this.copyAllHeaderNamesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.copyAllHeaderNamesToolStripMenuItem.Text = "Copy All Header Names";
-            this.copyAllHeaderNamesToolStripMenuItem.Click += new System.EventHandler(this.copyAllHeaderNamesToolStripMenuItem_Click);
+            this.copyAllColumnNamesToolStripMenuItem.Name = "copyAllColumnNamesToolStripMenuItem";
+            this.copyAllColumnNamesToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.copyAllColumnNamesToolStripMenuItem.Text = "Copy All Column Names";
+            this.copyAllColumnNamesToolStripMenuItem.Click += new System.EventHandler(this.copyAllColumnNamesToolStripMenuItem_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(240, 6);
             // 
-            // insertIntoQueryToolStripMenuItem
+            // insertColumnNameIntoQueryToolStripMenuItem
             // 
-            this.insertIntoQueryToolStripMenuItem.Name = "insertIntoQueryToolStripMenuItem";
-            this.insertIntoQueryToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.insertIntoQueryToolStripMenuItem.Text = "Insert Into Query";
-            this.insertIntoQueryToolStripMenuItem.Click += new System.EventHandler(this.insertIntoQueryToolStripMenuItem_Click);
+            this.insertColumnNameIntoQueryToolStripMenuItem.Name = "insertColumnNameIntoQueryToolStripMenuItem";
+            this.insertColumnNameIntoQueryToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
+            this.insertColumnNameIntoQueryToolStripMenuItem.Text = "Insert Column Name Into Query";
+            this.insertColumnNameIntoQueryToolStripMenuItem.Click += new System.EventHandler(this.insertColumnNameIntoQueryToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -1016,10 +1016,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton commentButton;
         private System.Windows.Forms.ContextMenuStrip columnHeaderMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem copyHeaderNameToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem copyAllHeaderNamesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyColumnNameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyAllColumnNamesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
-        private System.Windows.Forms.ToolStripMenuItem insertIntoQueryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem insertColumnNameIntoQueryToolStripMenuItem;
     }
 }
 

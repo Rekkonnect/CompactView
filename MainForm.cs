@@ -963,21 +963,46 @@ namespace CompactView
 
         private void dataGrid_MouseDown(object sender, MouseEventArgs e)
         {
-            DataGridView.HitTestInfo hit = dataGrid.HitTest(e.X, e.Y);
+            var hit = dataGrid.HitTest(e.X, e.Y);
             switch (hit.Type)
             {
                 case DataGridViewHitTestType.Cell:
                 {
                     dataGrid.ContextMenuStrip = dataGridMenuStrip;
+
                     dataGrid.CurrentCell = dataGrid[hit.ColumnIndex, hit.RowIndex];
+
                     foreach (DataGridViewCell cell in dataGrid.SelectedCells)
                         if (cell != dataGrid.CurrentCell)
                             cell.Selected = false;
+
                     break;
                 }
 
-                default:
+                case DataGridViewHitTestType.ColumnHeader:
+                case DataGridViewHitTestType.TopLeftHeader:
+                    UpdateEnabledOptionsColumnHeaderMenuStrip(hit.Type);
                     dataGrid.ContextMenuStrip = columnHeaderMenuStrip;
+                    break;
+
+                default:
+                    dataGrid.ContextMenuStrip = null;
+                    break;
+            }
+        }
+
+        private void UpdateEnabledOptionsColumnHeaderMenuStrip(DataGridViewHitTestType hitTestType)
+        {
+            switch (hitTestType)
+            {
+                case DataGridViewHitTestType.ColumnHeader:
+                    copyColumnNameToolStripMenuItem.Enabled = true;
+                    insertColumnNameIntoQueryToolStripMenuItem.Enabled = true;
+                    break;
+
+                case DataGridViewHitTestType.TopLeftHeader:
+                    copyColumnNameToolStripMenuItem.Enabled = false;
+                    insertColumnNameIntoQueryToolStripMenuItem.Enabled = false;
                     break;
             }
         }
@@ -1045,7 +1070,7 @@ namespace CompactView
 
         }
 
-        private void copyAllHeaderNamesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyAllColumnNamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var headerTexts = dataGrid.Columns.Cast<DataGridViewColumn>()
                 .Select(s => s.HeaderText);
@@ -1053,13 +1078,13 @@ namespace CompactView
             Clipboard.SetText(headers);
         }
 
-        private void copyHeaderNameToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyColumnNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string headerText = dataGrid.ClickedColumn.HeaderText;
             Clipboard.SetText(headerText);
         }
 
-        private void insertIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        private void insertColumnNameIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string headerText = dataGrid.ClickedColumn.HeaderText;
             InsertIntoQuery(headerText);
