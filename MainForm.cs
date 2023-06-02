@@ -236,13 +236,14 @@ namespace CompactView
                     // END EF TEST
 
                     // Fill tree with database name and table names
-                    treeDb.BeginUpdate();
-                    treeDb.Nodes.Clear();
-                    TreeNode main = treeDb.Nodes.Add("Database", Path.GetFileNameWithoutExtension(fileName), 0, 0);
-                    foreach (string tableName in db.TableNames)
-                        main.Nodes.Add(tableName, tableName, 1, 1);
-                    main.Expand();
-                    treeDb.EndUpdate();
+                    using (_ = treeDb.UpdateSection())
+                    {
+                        treeDb.Nodes.Clear();
+                        TreeNode main = treeDb.Nodes.Add("Database", Path.GetFileNameWithoutExtension(fileName), 0, 0);
+                        foreach (string tableName in db.TableNames)
+                            main.Nodes.Add(tableName, tableName, 1, 1);
+                        main.Expand();
+                    }
                     treeDb.SelectedNode = treeDb.Nodes[0];
 
                     // Show query panel immediately
@@ -306,20 +307,21 @@ namespace CompactView
             if (treeDb.SelectedNode == treeDb.Nodes[0])
                 selected = string.Empty;
 
-            treeDb.BeginUpdate();
-            TreeNode main = treeDb.Nodes[0];
-            main.Nodes.Clear();
-            foreach (string tableName in db.TableNames)
-                main.Nodes.Add(tableName, tableName, 1, 1);
-            main.Expand();
-            treeDb.EndUpdate();
+            var mainNode = treeDb.Nodes[0];
+            using (_ = treeDb.UpdateSection())
+            {
+                mainNode.Nodes.Clear();
+                foreach (string tableName in db.TableNames)
+                    mainNode.Nodes.Add(tableName, tableName, 1, 1);
+                mainNode.Expand();
+            }
 
             treeDb.SelectedNode = null;
             if (!string.IsNullOrEmpty(selected))
             {
-                int i = main.Nodes.IndexOfKey(selected);
+                int i = mainNode.Nodes.IndexOfKey(selected);
                 if (i >= 0)
-                    treeDb.SelectedNode = main.Nodes[i];
+                    treeDb.SelectedNode = mainNode.Nodes[i];
             }
             else
             {
@@ -384,35 +386,44 @@ namespace CompactView
             SaveSettings();
         }
 
+        private void treeDb_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hitTest = treeDb.HitTest(e.X, e.Y);
+            treeDb.SelectedNode = hitTest.Node;
+        }
+
         private void treeDb_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (!db.IsOpen)
                 return;
 
-            dataGrid.SuspendLayout();
-            if (e.Node.ImageIndex == 0)
-            {   // Database node
-                dataGrid.ReadOnly = true;
-                dataGrid.DataSource = DatabaseInfoLocale(db.DatabaseInfo);
-                rtbDdl.Text = db.GetDatabaseDdl();
-            }
-            else
-            {   // Table node
-                dataGrid.ReadOnly = cbReadOnly.SelectedIndex == 0;
-                dataGrid.Columns.Clear();
-                if (tabControl1.SelectedIndex == 0)
+            using (_ = dataGrid.LayoutSuspension())
+            {
+                if (e.Node.ImageIndex == 0)
                 {
-                    dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
-                    rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                    // Database node
+                    dataGrid.ReadOnly = true;
+                    dataGrid.DataSource = DatabaseInfoLocale(db.DatabaseInfo);
+                    rtbDdl.Text = db.GetDatabaseDdl();
                 }
                 else
                 {
-                    rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
-                    dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
+                    // Table node
+                    dataGrid.ReadOnly = cbReadOnly.SelectedIndex == 0;
+                    dataGrid.Columns.Clear();
+                    if (tabControl1.SelectedIndex == 0)
+                    {
+                        dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
+                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                    }
+                    else
+                    {
+                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                        dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
+                    }
                 }
+                dataGrid.AllowUserToAddRows = dataGrid.AllowUserToDeleteRows = !dataGrid.ReadOnly;
             }
-            dataGrid.AllowUserToAddRows = dataGrid.AllowUserToDeleteRows = !dataGrid.ReadOnly;
-            dataGrid.ResumeLayout();
         }
 
         private void dataGrid_DataError(object sender, DataGridViewDataErrorEventArgs e)
@@ -571,7 +582,12 @@ namespace CompactView
             rtbDdl.SelectionStart = start;
             rtbDdl.SelectionLength = stop - start + 1;
 
-            rtbQuery.SelectedText = rtbDdl.SelectedText;
+            InsertIntoQuery(rtbDdl.SelectedText);
+        }
+
+        private void InsertIntoQuery(string text)
+        {
+            rtbQuery.SelectedText = text;
             rtbQuery.Focus();
         }
 
@@ -962,21 +978,46 @@ namespace CompactView
 
         private void dataGrid_MouseDown(object sender, MouseEventArgs e)
         {
-            DataGridView.HitTestInfo hit = dataGrid.HitTest(e.X, e.Y);
+            var hit = dataGrid.HitTest(e.X, e.Y);
             switch (hit.Type)
             {
                 case DataGridViewHitTestType.Cell:
                 {
                     dataGrid.ContextMenuStrip = dataGridMenuStrip;
+
                     dataGrid.CurrentCell = dataGrid[hit.ColumnIndex, hit.RowIndex];
+
                     foreach (DataGridViewCell cell in dataGrid.SelectedCells)
                         if (cell != dataGrid.CurrentCell)
                             cell.Selected = false;
+
                     break;
                 }
 
-                default:
+                case DataGridViewHitTestType.ColumnHeader:
+                case DataGridViewHitTestType.TopLeftHeader:
+                    UpdateEnabledOptionsColumnHeaderMenuStrip(hit.Type);
                     dataGrid.ContextMenuStrip = columnHeaderMenuStrip;
+                    break;
+
+                default:
+                    dataGrid.ContextMenuStrip = null;
+                    break;
+            }
+        }
+
+        private void UpdateEnabledOptionsColumnHeaderMenuStrip(DataGridViewHitTestType hitTestType)
+        {
+            switch (hitTestType)
+            {
+                case DataGridViewHitTestType.ColumnHeader:
+                    copyColumnNameToolStripMenuItem.Enabled = true;
+                    insertColumnNameIntoQueryToolStripMenuItem.Enabled = true;
+                    break;
+
+                case DataGridViewHitTestType.TopLeftHeader:
+                    copyColumnNameToolStripMenuItem.Enabled = false;
+                    insertColumnNameIntoQueryToolStripMenuItem.Enabled = false;
                     break;
             }
         }
@@ -999,29 +1040,29 @@ namespace CompactView
                     return;
             }
 
-            dataGrid.SuspendLayout();
-            dataGrid.Columns.Clear();
-            switch (order)
+            using (_ = dataGrid.LayoutSuspension())
             {
-                case SortOrder.None:
-                    order = SortOrder.Ascending;
-                    break;
-                case SortOrder.Ascending:
-                    order = SortOrder.Descending;
-                    break;
-                case SortOrder.Descending:
-                    order = SortOrder.Ascending;
-                    break;
+                dataGrid.Columns.Clear();
+                switch (order)
+                {
+                    case SortOrder.None:
+                        order = SortOrder.Ascending;
+                        break;
+                    case SortOrder.Ascending:
+                        order = SortOrder.Descending;
+                        break;
+                    case SortOrder.Descending:
+                        order = SortOrder.Ascending;
+                        break;
+                }
+
+                dataGrid.DataSource = db.GetTableData(tableName, columnName, order);
+                column = dataGrid.Columns[columnName];
+                column.SortMode = DataGridViewColumnSortMode.Programmatic;
+                column.HeaderCell.SortGlyphDirection = order;
+                if (e.Button == MouseButtons.Right)
+                    column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             }
-
-            dataGrid.DataSource = db.GetTableData(tableName, columnName, order);
-            column = dataGrid.Columns[columnName];
-            column.SortMode = DataGridViewColumnSortMode.Programmatic;
-            column.HeaderCell.SortGlyphDirection = order;
-            if (e.Button == MouseButtons.Right)
-                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-
-            dataGrid.ResumeLayout();
         }
 
         private void dataGrid_ColumnAdded(object sender, DataGridViewColumnEventArgs e)
@@ -1044,7 +1085,7 @@ namespace CompactView
 
         }
 
-        private void copyAllHeaderNamesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyAllColumnNamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var headerTexts = dataGrid.Columns.Cast<DataGridViewColumn>()
                 .Select(s => s.HeaderText);
@@ -1052,10 +1093,28 @@ namespace CompactView
             Clipboard.SetText(headers);
         }
 
-        private void copyHeaderNameToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyColumnNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string headerText = dataGrid.Columns[dataGrid.CurrentCell.ColumnIndex].HeaderText;
+            string headerText = dataGrid.ClickedColumn.HeaderText;
             Clipboard.SetText(headerText);
+        }
+
+        private void insertColumnNameIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string headerText = dataGrid.ClickedColumn.HeaderText;
+            InsertIntoQuery(headerText);
+        }
+
+        private void copyNameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string name = treeDb.SelectedNode.Text;
+            Clipboard.SetText(name);
+        }
+
+        private void insertNameIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string name = treeDb.SelectedNode.Text;
+            InsertIntoQuery(name);
         }
     }
 }

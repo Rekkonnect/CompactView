@@ -60,52 +60,53 @@ namespace CompactView
             bool data = false;
             bool ok = false;
             string cmdError = null;
-            treeDb.Nodes.Clear();
-            treeDb.BeginUpdate();
-            var reader = new StreamReader(fileName);
-            ddl = new List<string>();
-            // Regular expression to search texts finished with semicolons that is not between single quotes
-            for (Match m = Regex.Match(reader.ReadToEnd(), @"(?:[^;']|'[^']*')+;\s*", RegexOptions.Compiled); m.Success; m = m.NextMatch())
-                ddl.Add(m.Value.TrimEnd('\r', '\n'));
 
-            RegexOptions options = RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase;
-            var regexCreateTable = new Regex(@"(?<=^CREATE\s+TABLE\s+\[)[^\]]*(?=\]\s+\([^\)]*\))", options);
-            var regexInsert = new Regex(@"(?<=^INSERT\s+INTO\s+\[)[^\]]*(?=\]\s+\([^\)]*\)\s+VALUES\s+\([^\)]*\))", options);
-            var regexAlterTable = new Regex(@"^ALTER\s+TABLE\s+\[", options);
-            var regexCreateIndex = new Regex(@"^CREATE\s+.*INDEX\s+", options);
-            var regexSetIdentity = new Regex(@"^SET\s+IDENTITY_INSERT\s+\[", options);
-
-            for (int i = 0; i < ddl.Count; i++)
+            using (_ = treeDb.UpdateSection())
             {
-                ok = false;
-                Match match1 = regexCreateTable.Match(ddl[i]);
-                if (match1.Success)
+                treeDb.Nodes.Clear();
+                var reader = new StreamReader(fileName);
+                ddl = new List<string>();
+                // Regular expression to search texts finished with semicolons that is not between single quotes
+                for (Match m = Regex.Match(reader.ReadToEnd(), @"(?:[^;']|'[^']*')+;\s*", RegexOptions.Compiled); m.Success; m = m.NextMatch())
+                    ddl.Add(m.Value.TrimEnd('\r', '\n'));
+
+                RegexOptions options = RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase;
+                var regexCreateTable = new Regex(@"(?<=^CREATE\s+TABLE\s+\[)[^\]]*(?=\]\s+\([^\)]*\))", options);
+                var regexInsert = new Regex(@"(?<=^INSERT\s+INTO\s+\[)[^\]]*(?=\]\s+\([^\)]*\)\s+VALUES\s+\([^\)]*\))", options);
+                var regexAlterTable = new Regex(@"^ALTER\s+TABLE\s+\[", options);
+                var regexCreateIndex = new Regex(@"^CREATE\s+.*INDEX\s+", options);
+                var regexSetIdentity = new Regex(@"^SET\s+IDENTITY_INSERT\s+\[", options);
+
+                for (int i = 0; i < ddl.Count; i++)
                 {
-                    treeDb.Nodes.Add(match1.Value, match1.Value, 0, 0).Checked = true;
-                    schema = true;
-                    ok = true;
-                }
-                Match match2 = regexInsert.Match(ddl[i]);
-                if (match2.Success)
-                {
-                    if (!treeDb.Nodes.ContainsKey(match2.Value))
-                        treeDb.Nodes.Add(match2.Value, match2.Value, 0, 0).Checked = true;
-                    data = true;
-                    ok = true;
-                }
-                if (!ok)
-                {
-                    if (regexAlterTable.IsMatch(ddl[i]) | regexCreateIndex.IsMatch(ddl[i]) | regexSetIdentity.IsMatch(ddl[i]))
+                    ok = false;
+                    Match match1 = regexCreateTable.Match(ddl[i]);
+                    if (match1.Success)
+                    {
+                        treeDb.Nodes.Add(match1.Value, match1.Value, 0, 0).Checked = true;
+                        schema = true;
                         ok = true;
+                    }
+                    Match match2 = regexInsert.Match(ddl[i]);
+                    if (match2.Success)
+                    {
+                        if (!treeDb.Nodes.ContainsKey(match2.Value))
+                            treeDb.Nodes.Add(match2.Value, match2.Value, 0, 0).Checked = true;
+                        data = true;
+                        ok = true;
+                    }
                     if (!ok)
                     {
-                        cmdError = ddl[i].Length <= 500 ? ddl[i] : $"{ddl[i].Remove(500)}...";
-                        break;
+                        if (regexAlterTable.IsMatch(ddl[i]) | regexCreateIndex.IsMatch(ddl[i]) | regexSetIdentity.IsMatch(ddl[i]))
+                            ok = true;
+                        if (!ok)
+                        {
+                            cmdError = ddl[i].Length <= 500 ? ddl[i] : $"{ddl[i].Remove(500)}...";
+                            break;
+                        }
                     }
                 }
             }
-
-            treeDb.EndUpdate();
             treeDb.ExpandAll();
             cbSchema.Enabled = cbSchema.Checked = schema;
             cbData.Enabled = cbData.Checked = data;
