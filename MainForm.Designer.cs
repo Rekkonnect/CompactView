@@ -46,6 +46,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.commentButton = new System.Windows.Forms.ToolStripButton();
             this.splitterHorizontal = new System.Windows.Forms.SplitContainer();
+            this.rtbQuery = new CompactView.SqlRichTextBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.cutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,8 +63,9 @@
             this.images = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.dataGrid = new System.Windows.Forms.DataGridView();
+            this.dataGrid = new HeaderHandlerGridView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.rtbDdl = new CompactView.SqlRichTextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
@@ -107,8 +109,8 @@
             this.columnHeaderMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyHeaderNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyAllHeaderNamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rtbQuery = new CompactView.SqlRichTextBox();
-            this.rtbDdl = new CompactView.SqlRichTextBox();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.insertIntoQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitterHorizontal)).BeginInit();
             this.splitterHorizontal.Panel1.SuspendLayout();
@@ -287,6 +289,25 @@
             this.splitterHorizontal.Size = new System.Drawing.Size(748, 363);
             this.splitterHorizontal.SplitterDistance = 200;
             this.splitterHorizontal.TabIndex = 1;
+            // 
+            // rtbQuery
+            // 
+            this.rtbQuery.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.rtbQuery.ContextMenuStrip = this.contextMenuStrip1;
+            this.rtbQuery.DetectUrls = false;
+            this.rtbQuery.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbQuery.Font = new System.Drawing.Font("Courier New", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(186)));
+            this.rtbQuery.HideSelection = false;
+            this.rtbQuery.Location = new System.Drawing.Point(0, 0);
+            this.rtbQuery.Name = "rtbQuery";
+            this.rtbQuery.Size = new System.Drawing.Size(746, 177);
+            this.rtbQuery.TabIndex = 6;
+            this.rtbQuery.Text = "";
+            this.rtbQuery.WordWrap = false;
+            this.rtbQuery.SelectionChanged += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
+            this.rtbQuery.Enter += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
+            this.rtbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.rtbQuery_KeyDown);
+            this.rtbQuery.Leave += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
             // 
             // contextMenuStrip1
             // 
@@ -494,6 +515,23 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "SQL Schema";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // rtbDdl
+            // 
+            this.rtbDdl.BackColor = System.Drawing.SystemColors.Window;
+            this.rtbDdl.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbDdl.ContextMenuStrip = this.contextMenuStrip1;
+            this.rtbDdl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbDdl.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rtbDdl.HideSelection = false;
+            this.rtbDdl.Location = new System.Drawing.Point(3, 3);
+            this.rtbDdl.Name = "rtbDdl";
+            this.rtbDdl.ReadOnly = true;
+            this.rtbDdl.Size = new System.Drawing.Size(556, 125);
+            this.rtbDdl.TabIndex = 2;
+            this.rtbDdl.Text = "";
+            this.rtbDdl.WordWrap = false;
+            this.rtbDdl.Click += new System.EventHandler(this.rtbDdl_Click);
             // 
             // openFileDialog1
             // 
@@ -827,9 +865,11 @@
             // 
             this.columnHeaderMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyHeaderNameToolStripMenuItem,
-            this.copyAllHeaderNamesToolStripMenuItem});
+            this.copyAllHeaderNamesToolStripMenuItem,
+            this.toolStripSeparator9,
+            this.insertIntoQueryToolStripMenuItem});
             this.columnHeaderMenuStrip.Name = "columnHeaderMenuStrip";
-            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(201, 70);
+            this.columnHeaderMenuStrip.Size = new System.Drawing.Size(201, 98);
             // 
             // copyHeaderNameToolStripMenuItem
             // 
@@ -845,41 +885,17 @@
             this.copyAllHeaderNamesToolStripMenuItem.Text = "Copy All Header Names";
             this.copyAllHeaderNamesToolStripMenuItem.Click += new System.EventHandler(this.copyAllHeaderNamesToolStripMenuItem_Click);
             // 
-            // rtbQuery
+            // toolStripSeparator9
             // 
-            this.rtbQuery.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.rtbQuery.ContextMenuStrip = this.contextMenuStrip1;
-            this.rtbQuery.DetectUrls = false;
-            this.rtbQuery.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbQuery.Font = new System.Drawing.Font("Courier New", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(186)));
-            this.rtbQuery.HideSelection = false;
-            this.rtbQuery.Location = new System.Drawing.Point(0, 0);
-            this.rtbQuery.Name = "rtbQuery";
-            this.rtbQuery.Size = new System.Drawing.Size(746, 177);
-            this.rtbQuery.TabIndex = 6;
-            this.rtbQuery.Text = "";
-            this.rtbQuery.WordWrap = false;
-            this.rtbQuery.SelectionChanged += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
-            this.rtbQuery.Enter += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
-            this.rtbQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.rtbQuery_KeyDown);
-            this.rtbQuery.Leave += new System.EventHandler(this.rtbQuery_Enter_Leave_SelectionChanged);
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(197, 6);
             // 
-            // rtbDdl
+            // insertIntoQueryToolStripMenuItem
             // 
-            this.rtbDdl.BackColor = System.Drawing.SystemColors.Window;
-            this.rtbDdl.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.rtbDdl.ContextMenuStrip = this.contextMenuStrip1;
-            this.rtbDdl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbDdl.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rtbDdl.HideSelection = false;
-            this.rtbDdl.Location = new System.Drawing.Point(3, 3);
-            this.rtbDdl.Name = "rtbDdl";
-            this.rtbDdl.ReadOnly = true;
-            this.rtbDdl.Size = new System.Drawing.Size(556, 125);
-            this.rtbDdl.TabIndex = 2;
-            this.rtbDdl.Text = "";
-            this.rtbDdl.WordWrap = false;
-            this.rtbDdl.Click += new System.EventHandler(this.rtbDdl_Click);
+            this.insertIntoQueryToolStripMenuItem.Name = "insertIntoQueryToolStripMenuItem";
+            this.insertIntoQueryToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.insertIntoQueryToolStripMenuItem.Text = "Insert Into Query";
+            this.insertIntoQueryToolStripMenuItem.Click += new System.EventHandler(this.insertIntoQueryToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -932,7 +948,7 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.TreeView treeDb;
         private System.Windows.Forms.ImageList images;
-        private System.Windows.Forms.DataGridView dataGrid;
+        private HeaderHandlerGridView dataGrid;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private SqlRichTextBox rtbDdl;
         private System.Windows.Forms.TabControl tabControl1;
@@ -1002,6 +1018,8 @@
         private System.Windows.Forms.ContextMenuStrip columnHeaderMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem copyHeaderNameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem copyAllHeaderNamesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem insertIntoQueryToolStripMenuItem;
     }
 }
 

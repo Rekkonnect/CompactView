@@ -98,6 +98,9 @@
       <DependentUpon>GetPassForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GlobalText.cs" />
+    <Compile Include="HeaderHandlerGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ImportForm.cs">
       <SubType>Form</SubType>
     </Compile>

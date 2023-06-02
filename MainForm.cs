@@ -562,7 +562,12 @@ namespace CompactView
             rtbDdl.SelectionStart = start;
             rtbDdl.SelectionLength = stop - start + 1;
 
-            rtbQuery.SelectedText = rtbDdl.SelectedText;
+            InsertIntoQuery(rtbDdl.SelectedText);
+        }
+
+        private void InsertIntoQuery(string text)
+        {
+            rtbQuery.SelectedText = text;
             rtbQuery.Focus();
         }
 
@@ -1045,8 +1050,14 @@ namespace CompactView
 
         private void copyHeaderNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string headerText = dataGrid.Columns[dataGrid.CurrentCell.ColumnIndex].HeaderText;
+            string headerText = dataGrid.ClickedColumn.HeaderText;
             Clipboard.SetText(headerText);
+        }
+
+        private void insertIntoQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string headerText = dataGrid.ClickedColumn.HeaderText;
+            InsertIntoQuery(headerText);
         }
     }
 }
