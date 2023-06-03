@@ -126,16 +126,6 @@ namespace CompactView
             string sWhere = tableName == null ? string.Empty : $"WHERE c.TABLE_NAME = '{tableName}' ";
             var nodes = new List<TreeNode>();
             DbCommand cmd = Connection.CreateCommand();
-            cmd.CommandText = @"
-SELECT c.COLUMN_NAME, c.TABLE_NAME, t.CONSTRAINT_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS AS c
-LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS u
-    ON u.TABLE_NAME = c.TABLE_NAME AND u.COLUMN_NAME = c.COLUMN_NAME
-LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS t
-    ON t.CONSTRAINT_NAME = u.CONSTRAINT_NAME AND t.TABLE_NAME = c.TABLE_NAME
-ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
-";
-
             cmd.CommandText = $@"
 SELECT c.COLUMN_NAME, c.TABLE_NAME, i.PRIMARY_KEY, t.UNIQUE_CONSTRAINT_TABLE_NAME + '@' + u2.COLUMN_NAME
 FROM INFORMATION_SCHEMA.COLUMNS AS c
@@ -236,26 +226,6 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
             dr.Close();
 
             return s;
-        }
-
-        private Column GetColumn(ref DbDataReader dr)
-        {
-            var col = new Column
-            {
-                ColumnName = dr.GetString(0),
-                ColumnHasDefault = (dr.IsDBNull(1) ? false : dr.GetBoolean(1)),
-                ColumnDefault = (dr.IsDBNull(2) ? string.Empty : dr.GetString(2).Trim()),
-                RowGuidCol = (dr.IsDBNull(3) ? false : dr.GetInt32(3) == 378 || dr.GetInt32(3) == 282),
-                IsNullable = dr.GetString(4).ToLower() == "yes",
-                DataType = dr.GetString(5),
-                CharacterMaxLength = (dr.IsDBNull(6) ? 0 : dr.GetInt32(6)),
-                NumericPrecision = (dr.IsDBNull(7) ? 0 : Convert.ToInt32(dr[7], culture)),
-                NumericScale = (dr.IsDBNull(8) ? 0 : Convert.ToInt32(dr[8], culture)),
-                AutoIncrementNext = (dr.IsDBNull(9) ? 0 : Convert.ToInt64(dr[9], culture)),
-                AutoIncrementSeed = (dr.IsDBNull(10) ? 0 : Convert.ToInt64(dr[10], culture)),
-                AutoIncrementBy = (dr.IsDBNull(11) ? 0 : Convert.ToInt64(dr[11], culture))
-            };
-            return col;
         }
 
         private Index GetIndex(ref DbDataReader dr)
@@ -380,6 +350,26 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
                     );
                     break;
             }
+        }
+
+        private Column GetColumn(ref DbDataReader dr)
+        {
+            var col = new Column
+            {
+                ColumnName = dr.GetString(0),
+                ColumnHasDefault = (dr.IsDBNull(1) ? false : dr.GetBoolean(1)),
+                ColumnDefault = (dr.IsDBNull(2) ? string.Empty : dr.GetString(2).Trim()),
+                RowGuidCol = (dr.IsDBNull(3) ? false : dr.GetInt32(3) == 378 || dr.GetInt32(3) == 282),
+                IsNullable = dr.GetString(4).ToLower() == "yes",
+                DataType = dr.GetString(5),
+                CharacterMaxLength = (dr.IsDBNull(6) ? 0 : dr.GetInt32(6)),
+                NumericPrecision = (dr.IsDBNull(7) ? 0 : Convert.ToInt32(dr[7], culture)),
+                NumericScale = (dr.IsDBNull(8) ? 0 : Convert.ToInt32(dr[8], culture)),
+                AutoIncrementNext = (dr.IsDBNull(9) ? 0 : Convert.ToInt64(dr[9], culture)),
+                AutoIncrementSeed = (dr.IsDBNull(10) ? 0 : Convert.ToInt64(dr[10], culture)),
+                AutoIncrementBy = (dr.IsDBNull(11) ? 0 : Convert.ToInt64(dr[11], culture))
+            };
+            return col;
         }
 
         private void AddColumnsDdl(ref StringBuilder ddl, string tableName)
@@ -526,7 +516,6 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
         public bool ColumnHasDefault { get; set; }
         public string ColumnDefault { get; set; }
         public bool RowGuidCol { get; set; }
-        public int Width { get; set; }
     }
 
     class ColumnList : List<string>

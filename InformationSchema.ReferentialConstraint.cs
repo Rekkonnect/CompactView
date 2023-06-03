@@ -28,23 +28,11 @@ namespace CompactView
         [Table("INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS")]
         public class ReferentialConstraint
         {
-            [Column("CONSTRAINT_CATALOG")]
-            public string ConstraintCatalog { get; set; }
-
-            [Column("CONSTRAINT_SCHEMA")]
-            public string ConstraintSchema { get; set; }
-
             [Column("CONSTRAINT_TABLE_NAME")]
             public string ConstraintTableName { get; set; }
 
             [Column("CONSTRAINT_NAME")]
             public string ConstraintName { get; set; }
-
-            [Column("UNIQUE_CONSTRAINT_CATALOG")]
-            public string UniqueConstraintCatalog { get; set; }
-
-            [Column("UNIQUE_CONSTRAINT_SCHEMA")]
-            public string UniqueConstraintSchema { get; set; }
 
             [Column("UNIQUE_CONSTRAINT_TABLE_NAME")]
             public string UniqueConstraintTableName { get; set; }
@@ -52,17 +40,79 @@ namespace CompactView
             [Column("UNIQUE_CONSTRAINT_NAME")]
             public string UniqueConstraintName { get; set; }
 
+            [Column("UPDATE_RULE")]
+            public string UpdateRuleName { get; set; }
+
+            [Column("DELETE_RULE")]
+            public string DeleteRuleName { get; set; }
+
+            #region Ignored
+            [NotMapped]
+            [Column("CONSTRAINT_CATALOG")]
+            public string ConstraintCatalog { get; set; }
+
+            [NotMapped]
+            [Column("CONSTRAINT_SCHEMA")]
+            public string ConstraintSchema { get; set; }
+
+            [NotMapped]
+            [Column("UNIQUE_CONSTRAINT_CATALOG")]
+            public string UniqueConstraintCatalog { get; set; }
+
+            [NotMapped]
+            [Column("UNIQUE_CONSTRAINT_SCHEMA")]
+            public string UniqueConstraintSchema { get; set; }
+
+            [NotMapped]
             [Column("MATCH_OPTION")]
             public string MatchOption { get; set; }
 
-            [Column("UPDATE_RULE")]
-            public string UpdateRule { get; set; }
-
-            [Column("DELETE_RULE")]
-            public string DeleteRule { get; set; }
-
+            [NotMapped]
             [Column("DESCRIPTION")]
             public string Description { get; set; }
+            #endregion
+
+            [NotMapped]
+            public ActionRule UpdateRuleValue
+                => MapActionRuleName(UpdateRuleName);
+
+            [NotMapped]
+            public ActionRule DeleteRuleValue
+                => MapActionRuleName(DeleteRuleName);
+
+            private static ActionRule MapActionRuleName(string name)
+            {
+                switch (name)
+                {
+                    case ActionRuleNames.NoAction:
+                        return ActionRule.NoAction;
+                    case ActionRuleNames.Cascade:
+                        return ActionRule.Cascade;
+                    case ActionRuleNames.SetNull:
+                        return ActionRule.SetNull;
+                    case ActionRuleNames.SetDefault:
+                        return ActionRule.SetDefault;
+                    default:
+                        return ActionRule.Unknown;
+                }
+            }
+
+            public static class ActionRuleNames
+            {
+                public const string NoAction = "NO ACTION";
+                public const string Cascade = "CASCADE";
+                public const string SetNull = "SET NULL";
+                public const string SetDefault = "SET DEFAULT";
+            }
+        }
+
+        public enum ActionRule
+        {
+            Unknown,
+            NoAction,
+            Cascade,
+            SetNull,
+            SetDefault,
         }
     }
 }

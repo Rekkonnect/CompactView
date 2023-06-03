@@ -22,12 +22,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SqlServerCe;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace CompactView
@@ -47,6 +45,8 @@ namespace CompactView
         };
 
         public SqlCeConnection Connection { get; private set; }
+
+
         public string FileName { get; private set; }
         public string Password { get; private set; }
         public string LastError { get; private set; }
@@ -54,10 +54,14 @@ namespace CompactView
         public bool BadPassword { get; private set; }
         public int QueryCount { get; private set; }
 
+        static SqlCeBase()
+        {
+            regexSemicolon.ColdStart();
+        }
+
         public SqlCeBase()
         {
             LastError = string.Empty;
-            regexSemicolon.Match(string.Empty);
         }
 
         public void Dispose()

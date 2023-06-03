@@ -228,7 +228,7 @@ namespace CompactView
 
                     // EF TEST
 
-                    using (var context = new SqlCeContext(db.Connection))
+                    using (var context = new InformationSchemaSqlCeContext(db.Connection))
                     {
 
                     }

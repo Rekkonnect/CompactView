@@ -21,6 +21,7 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 
 using System.ComponentModel.DataAnnotations.Schema;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace CompactView
 {
@@ -29,32 +30,43 @@ namespace CompactView
         [Table("INFORMATION_SCHEMA.TABLES")]
         public class Table
         {
-            [Column("TABLE_CATALOG")]
-            public string TableCatalog { get; set; }
-
-            [Column("TABLE_SCHEMA")]
-            public string TableSchema { get; set; }
-
+            [Key]
             [Column("TABLE_NAME")]
             public string TableName { get; set; }
 
+            #region Ignored
+            [NotMapped]
+            [Column("TABLE_CATALOG")]
+            public string TableCatalog { get; set; }
+
+            [NotMapped]
+            [Column("TABLE_SCHEMA")]
+            public string TableSchema { get; set; }
+
+            [NotMapped]
             [Column("TABLE_TYPE")]
             public string TableType { get; set; }
 
+            [NotMapped]
             [Column("TABLE_GUID")]
             public Guid TableGuid { get; set; }
 
+            [NotMapped]
             [Column("DESCRIPTION")]
             public string Description { get; set; }
 
+            [NotMapped]
             [Column("TABLE_PROPID")]
             public int? TablePropid { get; set; }
 
+            [NotMapped]
             [Column("DATE_CREATED")]
             public DateTime? DateCreated { get; set; }
 
+            [NotMapped]
             [Column("DATE_MODIFIED")]
             public DateTime? DateModified { get; set; }
+            #endregion
         }
     }
 }

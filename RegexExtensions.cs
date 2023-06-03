@@ -1,5 +1,5 @@
 ﻿/**************************************************************************
-Copyright (C) 2023 Rekkonnect
+Copyright (C) 2011-2015 Iván Costales Suárez
 
 This file is part of CompactView.
 
@@ -18,28 +18,15 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
-
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.SqlServerCompact;
-using System.Data.SqlServerCe;
+using System.Text.RegularExpressions;
 
 namespace CompactView
 {
-    public class SqlCeDbConfiguration : DbConfiguration
+    public static class RegexExtensions
     {
-        public SqlCeDbConfiguration()
+        public static void ColdStart(this Regex regex)
         {
-            SetProviderServices(
-                SqlCeProviderServices.ProviderInvariantName,
-                SqlCeProviderServices.Instance);
-
-            SetProviderFactory(
-                SqlCeProviderServices.ProviderInvariantName,
-                SqlCeProviderFactory.Instance);
-
-            SetDefaultConnectionFactory(
-                new SqlCeConnectionFactory(SqlCeProviderServices.ProviderInvariantName));
+            regex.Match(string.Empty);
         }
     }
 }

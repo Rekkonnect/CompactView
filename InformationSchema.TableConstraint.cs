@@ -19,63 +19,76 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.KEY_COLUMN_USAGE")]
-        public class KeyColumnUsage
+        [Table("INFORMATION_SCHEMA.TABLE_CONSTRAINTS")]
+        public class TableConstraint
         {
+            [Key]
             [Column("CONSTRAINT_NAME")]
             public string ConstraintName { get; set; }
+
+            [Column("CONSTRAINT_CATALOG")]
+            public string ConstraintCatalog { get; set; }
+
+            [Column("CONSTRAINT_SCHEMA")]
+            public string ConstraintSchema { get; set; }
+
+            [Column("TABLE_CATALOG")]
+            public string TableCatalog { get; set; }
+
+            [Column("TABLE_SCHEMA")]
+            public string TableSchema { get; set; }
 
             [Column("TABLE_NAME")]
             public string TableName { get; set; }
 
-            [Column("COLUMN_NAME")]
-            public string ColumnName { get; set; }
+            [Column("CONSTRAINT_TYPE")]
+            public string ConstraintTypeName { get; set; }
 
-            [Column("ORDINAL_POSITION")]
-            public int OrdinalPosition { get; set; }
+            [Column("IS_DEFERRABLE")]
+            public bool IsDeferrable { get; set; }
 
-            #region Ignored
-            [NotMapped]
-            [Column("CONSTRAINT_CATALOG")]
-            public string ConstraintCatalog { get; set; }
+            [Column("INITIALLY_DEFERRED")]
+            public bool InitiallyDeferred { get; set; }
 
-            [NotMapped]
-            [Column("CONSTRAINT_SCHEMA")]
-            public string ConstraintSchema { get; set; }
+            [Column("DESCRIPTION")]
+            public string Description { get; set; }
 
             [NotMapped]
-            [Column("TABLE_CATALOG")]
-            public string TableCatalog { get; set; }
+            public ConstraintType ConstraintTypeValue
+                => MapConstraintRuleName(ConstraintTypeName);
 
-            [NotMapped]
-            [Column("TABLE_SCHEMA")]
-            public string TableSchema { get; set; }
-
-            [NotMapped]
-            [Column("COLUMN_GUID")]
-            public string ColumnGuid { get; set; }
-
-            [NotMapped]
-            [Column("COLUMN_PROPID")]
-            public int? ColumnPropid { get; set; }
-            #endregion
-
-            public sealed class OrdinalComparer : IComparer<KeyColumnUsage>
+            private static ConstraintType MapConstraintRuleName(string name)
             {
-                public static OrdinalComparer Instance { get; } = new OrdinalComparer();
-
-                public int Compare(KeyColumnUsage x, KeyColumnUsage y)
+                switch (name)
                 {
-                    return x.OrdinalPosition.CompareTo(y.OrdinalPosition);
+                    case ConstraintTypeNames.PrimaryKey:
+                        return ConstraintType.PrimaryKey;
+                    case ConstraintTypeNames.ForeignKey:
+                        return ConstraintType.ForeignKey;
+                    default:
+                        return ConstraintType.Unknown;
                 }
             }
+
+            public static class ConstraintTypeNames
+            {
+                public const string PrimaryKey = "PRIMARY KEY";
+                public const string ForeignKey = "FOREIGN KEY";
+            }
+        }
+
+        public enum ConstraintType
+        {
+            Unknown,
+            PrimaryKey,
+            ForeignKey,
         }
     }
 }
