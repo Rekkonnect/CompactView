@@ -40,10 +40,10 @@ namespace CompactView
             public string ColumnName { get; set; }
 
             [Column("COLUMN_HASDEFAULT")]
-            public bool ColumnHasDefault { get; set; }
+            public bool HasDefaultValue { get; set; }
 
             [Column("COLUMN_DEFAULT")]
-            public string ColumnDefault { get; set; }
+            public string DefaultValue { get; set; }
 
             [Column("ORDINAL_POSITION")]
             public int OrdinalPosition { get; set; }
@@ -55,7 +55,7 @@ namespace CompactView
             public string DataType { get; set; }
 
             [Column("CHARACTER_MAXIMUM_LENGTH")]
-            public int CharacterMaximumLength { get; set; }
+            public int? CharacterMaximumLength { get; set; }
 
             [Column("NUMERIC_PRECISION")]
             public int? NumericPrecision { get; set; }
@@ -64,10 +64,10 @@ namespace CompactView
             public int? NumericScale { get; set; }
 
             [Column("AUTOINC_SEED")]
-            public int AutoIncrementSeed { get; set; }
+            public int? AutoIncrementSeed { get; set; }
 
             [Column("AUTOINC_INCREMENT")]
-            public int AutoIncrementBy { get; set; }
+            public int? AutoIncrementBy { get; set; }
 
             #region Ignored
             [NotMapped]

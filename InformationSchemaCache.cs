@@ -19,6 +19,7 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
+using Garyon.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -35,6 +36,10 @@ namespace CompactView
         private ListValueStringDictionary<InformationSchema.KeyColumnUsage> keyColumnUsagesByTable;
         private ListValueStringDictionary<InformationSchema.TableConstraint> tableConstraintsByTable;
         private ListValueStringDictionary<InformationSchema.ReferentialConstraint> referentialConstraintsByTable;
+
+        private Dictionary<string, TableConstraintInfo> tableConstraintInfoByName;
+        private Dictionary<string, ReferentialConstraintInfo> referentialConstraintInfoByName;
+        private Dictionary<string, IndexInfo> indexInfoByName;
 
         public IEnumerable<string> TableNames
             => tableNames.Cast<string>();
@@ -54,11 +59,68 @@ namespace CompactView
         public IReadOnlyDictionary<string, IReadOnlyList<InformationSchema.ReferentialConstraint>> ReferentialConstraintsByTable
             => referentialConstraintsByTable;
 
+        public IReadOnlyDictionary<string, TableConstraintInfo> TableConstraintInfoByName
+            => tableConstraintInfoByName;
+
+        public IReadOnlyDictionary<string, ReferentialConstraintInfo> ReferentialConstraintInfoByName
+            => referentialConstraintInfoByName;
+
+        public IReadOnlyDictionary<string, IndexInfo> IndexInfoByName
+            => indexInfoByName;
+
         public InformationSchemaSqlCeContext Context { get; }
 
         public InformationSchemaCache(InformationSchemaSqlCeContext context)
         {
             Context = context;
+        }
+
+        public IReadOnlyList<TableConstraintInfo> TableConstraintInfoForTable(string tableName)
+        {
+            return InfoForTable(
+                tableName,
+                tableConstraintsByTable,
+                tableConstraintInfoByName,
+                c => c.ConstraintName);
+        }
+
+        public IReadOnlyList<IndexInfo> IndexInfoForTable(string tableName)
+        {
+            return InfoForTable(
+                tableName,
+                indexesByTable,
+                indexInfoByName,
+                c => c.IndexName);
+        }
+
+        public IReadOnlyList<ReferentialConstraintInfo> ReferentialConstraintInfoForTable(string tableName)
+        {
+            return InfoForTable(
+                tableName,
+                referentialConstraintsByTable,
+                referentialConstraintInfoByName,
+                c => c.ConstraintName);
+        }
+
+        private static IReadOnlyList<TInfo> InfoForTable<TDbObject, TInfo>(
+            string tableName,
+            ListValueStringDictionary<TDbObject> dictionaryByTable,
+            Dictionary<string, TInfo> dictionaryByInfoName,
+            Func<TDbObject, string> nameGetter)
+
+            where TDbObject : class
+            where TInfo : class
+        {
+            var constraints = dictionaryByTable[tableName];
+
+            var result = new HashSet<TInfo>();
+            foreach (var info in constraints)
+            {
+                var indexInfo = dictionaryByInfoName[nameGetter(info)];
+                result.Add(indexInfo);
+            }
+
+            return result.ToArray();
         }
 
         public void Clear()
@@ -69,6 +131,8 @@ namespace CompactView
             keyColumnUsagesByTable = null;
             tableConstraintsByTable = null;
             referentialConstraintsByTable = null;
+            tableConstraintInfoByName = null;
+            referentialConstraintInfoByName = null;
         }
 
         public void Load()
@@ -98,6 +162,72 @@ namespace CompactView
             SortByOrdinalComparer(
                 keyColumnUsagesByTable,
                 InformationSchema.KeyColumnUsage.OrdinalComparer.Instance);
+
+            LoadTableConstraintInfo();
+            LoadReferentialConstraintInfo();
+            LoadIndexInfo();
+        }
+
+        private void LoadTableConstraintInfo()
+        {
+            tableConstraintInfoByName = new Dictionary<string, TableConstraintInfo>();
+            var keyColumnUsagesByConstraint = new ListValueStringDictionary<InformationSchema.KeyColumnUsage>();
+
+            // Flattening and serially iterating is a great option
+            // without bumping the structural complexity
+            // while not sacrificing performance
+
+            foreach (var constraint in tableConstraintsByTable.Values.Flatten())
+            {
+                var constraintInfo = new TableConstraintInfo(
+                    constraint,
+                    keyColumnUsagesByConstraint[constraint.ConstraintName]);
+
+                tableConstraintInfoByName.Add(constraint.ConstraintName, constraintInfo);
+            }
+
+            foreach (var keyColumnUsage in keyColumnUsagesByTable.Values.Flatten())
+            {
+                string constraintName = keyColumnUsage.ConstraintName;
+                keyColumnUsagesByConstraint[constraintName].Add(keyColumnUsage);
+            }
+        }
+
+        private void LoadReferentialConstraintInfo()
+        {
+            referentialConstraintInfoByName = new Dictionary<string, ReferentialConstraintInfo>();
+            var keyColumnUsagesByConstraint = new ListValueStringDictionary<InformationSchema.KeyColumnUsage>();
+
+            foreach (var constraint in referentialConstraintsByTable.Values.Flatten())
+            {
+                var tableConstraint = tableConstraintInfoByName[constraint.UniqueConstraintName];
+
+                var constraintInfo = new ReferentialConstraintInfo(
+                    constraint,
+                    keyColumnUsagesByConstraint[constraint.ConstraintName],
+                    tableConstraint);
+
+                referentialConstraintInfoByName.Add(constraint.ConstraintName, constraintInfo);
+            }
+
+            foreach (var keyColumnUsage in keyColumnUsagesByTable.Values.Flatten())
+            {
+                string constraintName = keyColumnUsage.ConstraintName;
+                keyColumnUsagesByConstraint[constraintName].Add(keyColumnUsage);
+            }
+        }
+
+        private void LoadIndexInfo()
+        {
+            // Due to the way the data is stored, a LINQ
+            // query is very appealing
+
+            var indexInfo =
+                from index in indexesByTable.Values.Flatten()
+                group index by index.IndexName into indexGroup
+                select new IndexInfo(indexGroup.Key, indexGroup.ToList());
+
+            indexInfoByName = indexInfo.ToDictionary(x => x.IndexName);
         }
 
         private static void SortByOrdinalComparer<TEntity, TComparer>(

@@ -102,6 +102,11 @@
     <Compile Include="ColorComboBox.cs" />
     <Compile Include="ControlUpdatingExtensions.cs" />
     <Compile Include="DataSetExtensions.cs" />
+    <Compile Include="Ddl\DdlStorage.cs" />
+    <Compile Include="Ddl\FinalizableSqlStringBuilder.cs" />
+    <Compile Include="Ddl\FinalizableStringBuilder.cs" />
+    <Compile Include="Ddl\SchemaDdl.cs" />
+    <Compile Include="Ddl\SchemaObjectType.cs" />
     <Compile Include="DoubleBufferedDataGridView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -127,6 +132,7 @@
     <Compile Include="ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="IndexInfo.cs" />
     <Compile Include="InformationSchema.Column.cs" />
     <Compile Include="InformationSchema.Index.cs" />
     <Compile Include="InformationSchema.KeyColumnUsage.cs" />
@@ -159,6 +165,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="PropertyConfigurationExtensions.cs" />
+    <Compile Include="ReferentialConstraintInfo.cs" />
     <Compile Include="RegexExtensions.cs" />
     <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="RichTextBoxHelper.cs" />
@@ -170,6 +177,9 @@
     <Compile Include="SqlRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SqlString.cs" />
+    <Compile Include="StringBuilderExtensions.cs" />
+    <Compile Include="TableConstraintInfo.cs" />
     <Compile Include="ToolsForm.cs">
       <SubType>Form</SubType>
     </Compile>
