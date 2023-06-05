@@ -1114,5 +1114,35 @@ namespace CompactView
             string name = treeDb.SelectedNode.Text;
             InsertIntoQuery(name);
         }
+
+        private void MainForm_DragEnter(object sender, DragEventArgs e)
+        {
+            var data = e.Data.GetData(DataFormats.FileDrop);
+            switch (data)
+            {
+                case string[] fileNames:
+                    if (fileNames.Length == 1)
+                    {
+                        e.Effect = DragDropEffects.Copy;
+                    }
+                    break;
+            }
+        }
+
+        private void MainForm_DragDrop(object sender, DragEventArgs e)
+        {
+            var fileDropData = e.Data.GetData(DataFormats.FileDrop);
+            switch (fileDropData)
+            {
+                case string[] fileNames:
+                    if (fileNames.Length == 1)
+                    {
+                        e.Effect = DragDropEffects.None;
+                        var fileName = fileNames[0];
+                        LoadDatabase(fileName);
+                    }
+                    break;
+            }
+        }
     }
 }
