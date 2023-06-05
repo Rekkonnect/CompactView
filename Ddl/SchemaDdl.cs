@@ -62,6 +62,9 @@ namespace CompactView.Ddl
         {
             foreach (var index in indexes)
             {
+                if (index.FirstColumn.PrimaryKey)
+                    continue;
+
                 DdlFactory.Shared.AppendIndexInfo(_indexes.Builder, index);
                 _indexes.Builder.AppendLineCount(2);
             }
@@ -193,7 +196,7 @@ namespace CompactView.Ddl
 
             AppendSpecificTypeProperties(builder, column);
 
-            if (column.IsNullable)
+            if (!column.IsNullable)
             {
                 builder.Append(" NOT NULL");
             }
@@ -264,7 +267,7 @@ namespace CompactView.Ddl
 
                 if (i < tableConstraintInfo.ColumnUsages.Count - 1)
                 {
-                    builder.Append(',');
+                    builder.Append(", ");
                 }
             }
 
@@ -290,11 +293,11 @@ namespace CompactView.Ddl
 
                 if (i < referentialConstraint.ColumnUsages.Count - 1)
                 {
-                    builder.Append(',');
+                    builder.Append(", ");
                 }
             }
 
-            builder.AppendLine();
+            builder.AppendLine(')');
             builder.Append("REFERENCES ");
             AppendIdentifier(builder, referentialConstraint.Constraint.UniqueConstraintTableName);
 
@@ -307,7 +310,7 @@ namespace CompactView.Ddl
 
                 if (i < referentialConstraint.TableConstraintColumnUsages.Count - 1)
                 {
-                    builder.Append(',');
+                    builder.Append(", ");
                 }
             }
 
@@ -333,8 +336,9 @@ namespace CompactView.Ddl
             }
             builder.Append("INDEX ");
             AppendIdentifier(builder, indexName);
-            builder.Append(" ON (");
+            builder.Append(" ON ");
             AppendIdentifier(builder, tableName);
+            builder.Append(" (");
 
             for (int i = 0; i < indexInfo.ColumnIndexes.Count; i++)
             {

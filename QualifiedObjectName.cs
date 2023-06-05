@@ -19,26 +19,41 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
-using System.Collections.Generic;
+using System;
 
 namespace CompactView
 {
-    public class IndexInfo
+    public readonly struct QualifiedObjectName : IEquatable<QualifiedObjectName>
     {
-        public QualifiedObjectName QualifiedName { get; }
-        public IReadOnlyList<InformationSchema.Index> ColumnIndexes { get; }
+        public string TableName { get; }
+        public string ObjectName { get; }
 
-        public InformationSchema.Index FirstColumn => ColumnIndexes[0];
-
-        public string TableName => QualifiedName.TableName;
-        public string IndexName => QualifiedName.ObjectName;
-
-        public IndexInfo(
-            QualifiedObjectName qualifiedName,
-            IReadOnlyList<InformationSchema.Index> columnIndexes)
+        public QualifiedObjectName(string tableName, string objectName)
         {
-            QualifiedName = qualifiedName;
-            ColumnIndexes = columnIndexes;
+            TableName = tableName;
+            ObjectName = objectName;
+        }
+
+        public override string ToString()
+        {
+            return TableName + "." + ObjectName;
+        }
+
+        public bool Equals(QualifiedObjectName other)
+        {
+            return TableName == other.TableName
+                && ObjectName == other.ObjectName;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is QualifiedObjectName
+                && Equals((QualifiedObjectName)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return TableName.GetHashCode() ^ ObjectName.GetHashCode();
         }
     }
 }

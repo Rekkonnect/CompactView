@@ -170,6 +170,7 @@
     </Compile>
     <Compile Include="SqlString.cs" />
     <Compile Include="StringBuilderExtensions.cs" />
+    <Compile Include="QualifiedObjectName.cs" />
     <Compile Include="TableConstraintInfo.cs" />
     <Compile Include="ToolsForm.cs">
       <SubType>Form</SubType>

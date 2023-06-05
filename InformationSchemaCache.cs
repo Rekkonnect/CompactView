@@ -23,6 +23,7 @@ using Garyon.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 
@@ -39,7 +40,7 @@ namespace CompactView
 
         private Dictionary<string, TableConstraintInfo> tableConstraintInfoByName;
         private Dictionary<string, ReferentialConstraintInfo> referentialConstraintInfoByName;
-        private Dictionary<string, IndexInfo> indexInfoByName;
+        private Dictionary<QualifiedObjectName, IndexInfo> indexInfoByName;
 
         public IEnumerable<string> TableNames
             => tableNames.Cast<string>();
@@ -65,9 +66,6 @@ namespace CompactView
         public IReadOnlyDictionary<string, ReferentialConstraintInfo> ReferentialConstraintInfoByName
             => referentialConstraintInfoByName;
 
-        public IReadOnlyDictionary<string, IndexInfo> IndexInfoByName
-            => indexInfoByName;
-
         public SqlCeInformationSchemaData SchemaData { get; }
 
         public InformationSchemaCache(SqlCeInformationSchemaData schemaData)
@@ -86,11 +84,16 @@ namespace CompactView
 
         public IReadOnlyList<IndexInfo> IndexInfoForTable(string tableName)
         {
-            return InfoForTable(
-                tableName,
-                indexesByTable,
-                indexInfoByName,
-                c => c.IndexName);
+            var constraints = indexesByTable[tableName];
+
+            var result = new HashSet<IndexInfo>();
+            foreach (var info in constraints)
+            {
+                var indexInfo = indexInfoByName[info.QualifiedName];
+                result.Add(indexInfo);
+            }
+
+            return result.ToArray();
         }
 
         public IReadOnlyList<ReferentialConstraintInfo> ReferentialConstraintInfoForTable(string tableName)
@@ -224,10 +227,12 @@ namespace CompactView
 
             var indexInfo =
                 from index in indexesByTable.Values.Flatten()
-                group index by index.IndexName into indexGroup
+                group index
+                    by new QualifiedObjectName(index.TableName, index.IndexName)
+                    into indexGroup
                 select new IndexInfo(indexGroup.Key, indexGroup.ToList());
 
-            indexInfoByName = indexInfo.ToDictionary(x => x.IndexName);
+            indexInfoByName = indexInfo.ToDictionary(x => x.QualifiedName);
         }
 
         private static void SortByOrdinalComparer<TEntity, TComparer>(

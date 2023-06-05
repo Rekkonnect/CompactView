@@ -155,6 +155,12 @@ namespace CompactView
             _ddlStorage.Clear();
         }
 
+        public void RebuildDdl()
+        {
+            ResetDdl();
+            LoadDatabaseInformation();
+        }
+
         public TreeNode[] GetSchemaNodes(string tableName)
         {
             string sWhere = tableName == null ? string.Empty : $"WHERE c.TABLE_NAME = '{tableName}' ";

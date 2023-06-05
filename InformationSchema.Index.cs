@@ -143,6 +143,9 @@ namespace CompactView
                 }
             }
 
+            [NotMapped]
+            public QualifiedObjectName QualifiedName
+                => new QualifiedObjectName(TableName, IndexName);
 
             public sealed class OrdinalComparer : IComparer<Index>
             {

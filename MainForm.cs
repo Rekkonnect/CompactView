@@ -493,7 +493,7 @@ namespace CompactView
                 lbResult.Text = $"{db.QueryCount} {GlobalText.GetValue("Queries")}, {dataGrid.RowCount} {GlobalText.GetValue("Rows")}, {ms} {GlobalText.GetValue("Milliseconds")}";
                 if (resultSet == null && regexCreateAlterDrop.IsMatch(regexDropQuotesAndBrackets.Replace(rtbQuery.Text, string.Empty)))
                 {
-                    db.ResetDdl();  // Update DDL
+                    db.RebuildDdl();
                     UpdateTreeDb();
                 }
                 else
