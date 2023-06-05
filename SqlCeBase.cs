@@ -46,7 +46,6 @@ namespace CompactView
 
         public SqlCeConnection Connection { get; private set; }
 
-
         public string FileName { get; private set; }
         public string Password { get; private set; }
         public string LastError { get; private set; }

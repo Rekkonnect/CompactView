@@ -1,5 +1,5 @@
 ﻿/**************************************************************************
-Copyright (C) 2011-2015 Iván Costales Suárez
+Copyright (C) 2023 Rekkonnect
 
 This file is part of CompactView.
 

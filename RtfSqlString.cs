@@ -18,27 +18,41 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
+using System;
 
-namespace CompactView.Lexing
+namespace CompactView
 {
-    public readonly struct Token
+    internal class RtfSqlString
     {
-        public static Token Invalid { get; } = new Token(TokenKind.Undetermined, default);
+        private readonly Lazy<string> _lazyRtf;
 
-        public TokenKind Kind { get; }
-        public StringSlice Value { get; }
+        public SqlString SqlString { get; }
 
-        public bool IsValid => Value.Source != null;
-
-        public Token(TokenKind kind, StringSlice value)
+        public RtfSqlString(SqlString sqlString)
         {
-            Kind = kind;
-            Value = value;
+            SqlString = sqlString;
+            _lazyRtf = new Lazy<string>(BuildRtf);
         }
 
-        public override string ToString()
+        public string GetRtf()
         {
-            return $"{Kind}: '{Value}'";
+            return _lazyRtf.Value;
+        }
+
+        private string BuildRtf()
+        {
+            var tokens = SqlString.GetTokens();
+            var builder = new RtfStringBuilder();
+
+            foreach (var token in tokens)
+            {
+                builder.AppendUnprocessed(@"\cf");
+                builder.Append((int)token.Kind + 1);
+                builder.Append(' ');
+                builder.AppendToken(token);
+            }
+
+            return builder.ToString();
         }
     }
 }

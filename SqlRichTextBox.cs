@@ -19,6 +19,7 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 using CompactView.Lexing;
+using Garyon.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -32,6 +33,8 @@ namespace CompactView
         private readonly AuxiliarySqlRtb _auxiliaryRtb = new AuxiliarySqlRtb();
 
         private bool _parsing = false;
+
+        internal RtfSqlStringDictionary RtfSqlCache => _auxiliaryRtb.RtfSqlCache;
 
         public SqlString SqlString
         {
@@ -104,12 +107,59 @@ namespace CompactView
             _parsing = false;
         }
 
+        internal sealed class RtfSqlStringDictionary
+        {
+            private readonly Dictionary<SqlString, RtfSqlString> _dictionary =
+                new Dictionary<SqlString, RtfSqlString>();
+
+            public void Clear()
+            {
+                _dictionary.Clear();
+            }
+
+            public void Add(SqlString sqlString)
+            {
+                _dictionary.Add(sqlString, new RtfSqlString(sqlString));
+            }
+
+            public void AddRange(IEnumerable<SqlString> sqlStrings)
+            {
+                foreach (var sqlString in sqlStrings)
+                {
+                    Add(sqlString);
+                }
+            }
+
+            public void SetRange(IEnumerable<SqlString> sqlStrings)
+            {
+                Clear();
+                AddRange(sqlStrings);
+            }
+
+            public bool TryGetValue(SqlString sqlString, out RtfSqlString rtfSqlString)
+            {
+                return _dictionary.TryGetValue(sqlString, out rtfSqlString);
+            }
+            public RtfSqlString ValueOrNull(SqlString sqlString)
+            {
+                return _dictionary.ValueOrDefault(sqlString);
+            }
+
+            public void Remove(SqlString sqlString)
+            {
+                _dictionary.Remove(sqlString);
+            }
+        }
+
         private sealed class AuxiliarySqlRtb : RichTextBox
         {
             private static readonly Color[] _colorMappings =
                 new Color[(int)TokenKind.KnownFunction + 1];
 
             private static readonly string _rtfHeader;
+
+            public readonly RtfSqlStringDictionary RtfSqlCache =
+                new RtfSqlStringDictionary();
 
             static AuxiliarySqlRtb()
             {
@@ -137,10 +187,14 @@ namespace CompactView
                 SetColorMapping(kind, color);
             }
 
-            private void SetTokens(List<Token> tokens)
+            private void SetRtfSql(RtfSqlString rtf)
             {
                 Text = string.Empty;
+                Rtf = GenerateRtf(rtf);
+            }
 
+            private string GenerateRtf(RtfSqlString rtfString)
+            {
                 var builder = new RtfStringBuilder();
                 builder.AppendUnprocessed(_rtfHeader);
 
@@ -150,29 +204,24 @@ namespace CompactView
                 // This header specifies the Latin text
                 builder.AppendUnprocessed(@"\lang1033 ");
 
-                foreach (var token in tokens)
-                {
-                    builder.AppendUnprocessed(@"\cf");
-                    builder.Append((int)token.Kind + 1);
-                    builder.Append(' ');
-                    builder.AppendToken(token);
-                }
+                var rtf = rtfString.GetRtf();
+                builder.AppendUnprocessed(rtf);
 
                 builder.AppendUnprocessed("\\par\n");
                 builder.Append('}');
-                Rtf = builder.ToString();
-            }
-
-            public void SetText(string text)
-            {
-                var sqlString = new SqlString(text);
-                SetSqlString(sqlString);
+                return builder.ToString();
             }
 
             public void SetSqlString(SqlString sql)
             {
-                var tokens = sql.GetTokens();
-                SetTokens(tokens);
+                var rtfString = GetRtfString(sql);
+                SetRtfSql(rtfString);
+            }
+
+            private RtfSqlString GetRtfString(SqlString sql)
+            {
+                return RtfSqlCache.ValueOrNull(sql)
+                    ?? new RtfSqlString(sql);
             }
 
             private StringSlice GetMetaHeaders()
@@ -217,91 +266,91 @@ namespace CompactView
                 }
             }
         }
+    }
 
-        private sealed class RtfStringBuilder
+    internal sealed class RtfStringBuilder
+    {
+        private readonly StringBuilder _stringBuilder = new StringBuilder();
+
+        public RtfStringBuilder AppendUnprocessed(string text)
         {
-            private readonly StringBuilder _stringBuilder = new StringBuilder();
+            _stringBuilder.Append(text);
+            return this;
+        }
 
-            public RtfStringBuilder AppendUnprocessed(string text)
-            {
-                _stringBuilder.Append(text);
-                return this;
-            }
+        public RtfStringBuilder Append(byte value)
+        {
+            _stringBuilder.Append(value);
+            return this;
+        }
 
-            public RtfStringBuilder Append(byte value)
-            {
-                _stringBuilder.Append(value);
-                return this;
-            }
+        public RtfStringBuilder Append(int value)
+        {
+            _stringBuilder.Append(value);
+            return this;
+        }
 
-            public RtfStringBuilder Append(int value)
-            {
-                _stringBuilder.Append(value);
-                return this;
-            }
+        public RtfStringBuilder Append(char value)
+        {
+            _stringBuilder.Append(value);
+            return this;
+        }
 
-            public RtfStringBuilder Append(char value)
-            {
-                _stringBuilder.Append(value);
-                return this;
-            }
+        public RtfStringBuilder AppendUnprocessed(StringSlice stringSlice)
+        {
+            _stringBuilder.AppendSlice(stringSlice);
+            return this;
+        }
 
-            public RtfStringBuilder AppendUnprocessed(StringSlice stringSlice)
+        public RtfStringBuilder Append(StringSlice stringSlice)
+        {
+            foreach (var line in stringSlice.EnumerateLines())
             {
-                _stringBuilder.AppendSlice(stringSlice);
-                return this;
-            }
+                EscapeAppend(line);
 
-            public RtfStringBuilder Append(StringSlice stringSlice)
-            {
-                foreach (var line in stringSlice.EnumerateLines())
+                bool isTrailingText = line.MatchesEnd(stringSlice);
+                if (!isTrailingText)
                 {
-                    EscapeAppend(line);
-
-                    bool isTrailingText = line.MatchesEnd(stringSlice);
-                    if (!isTrailingText)
-                    {
-                        _stringBuilder.Append(@"\par");
-                        _stringBuilder.Append('\n');
-                    }
+                    _stringBuilder.Append(@"\par");
+                    _stringBuilder.Append('\n');
                 }
-
-                return this;
             }
 
-            public RtfStringBuilder EscapeAppend(StringSlice slice)
+            return this;
+        }
+
+        public RtfStringBuilder EscapeAppend(StringSlice slice)
+        {
+            for (int i = 0; i < slice.Length; i++)
             {
-                for (int i = 0; i < slice.Length; i++)
+                char c = slice[i];
+                switch (c)
                 {
-                    char c = slice[i];
-                    switch (c)
-                    {
-                        case '\\':
-                        case '{':
-                        case '}':
-                            _stringBuilder.Append('\\');
-                            _stringBuilder.Append(c);
-                            break;
+                    case '\\':
+                    case '{':
+                    case '}':
+                        _stringBuilder.Append('\\');
+                        _stringBuilder.Append(c);
+                        break;
 
-                        default:
-                            _stringBuilder.Append(c);
-                            break;
-                    }
+                    default:
+                        _stringBuilder.Append(c);
+                        break;
                 }
-
-                return this;
             }
 
-            public RtfStringBuilder AppendToken(Token token)
-            {
-                var stringSlice = token.Value;
-                return Append(stringSlice);
-            }
+            return this;
+        }
 
-            public override string ToString()
-            {
-                return _stringBuilder.ToString();
-            }
+        public RtfStringBuilder AppendToken(Token token)
+        {
+            var stringSlice = token.Value;
+            return Append(stringSlice);
+        }
+
+        public override string ToString()
+        {
+            return _stringBuilder.ToString();
         }
     }
 }

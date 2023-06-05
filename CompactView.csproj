@@ -160,6 +160,7 @@
     <Compile Include="RegexExtensions.cs" />
     <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="RichTextBoxHelper.cs" />
+    <Compile Include="RtfSqlString.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SqlCeBase.cs" />
     <Compile Include="SqlCeDb.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="StringBuilderExtensions.cs" />
     <Compile Include="QualifiedObjectName.cs" />
     <Compile Include="TableConstraintInfo.cs" />
+    <Compile Include="TokenList.cs" />
     <Compile Include="ToolsForm.cs">
       <SubType>Form</SubType>
     </Compile>

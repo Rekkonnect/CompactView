@@ -56,6 +56,18 @@ namespace CompactView.Ddl
             ConstructDatabaseDdl();
         }
 
+        public IEnumerable<SqlString> AllAvailableEntireDdls()
+        {
+            var databaseEntire = DatabaseDdl?.EntireDdl;
+            if (databaseEntire != null)
+                yield return databaseEntire;
+
+            foreach (var tableDdl in _tableDdls.Values)
+            {
+                yield return tableDdl.EntireDdl;
+            }
+        }
+
         private void BuildTableDdl(InformationSchemaCache cache, string tableName)
         {
             var schemaDdl = new SchemaDdl(SchemaObjectType.Table, tableName);

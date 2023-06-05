@@ -226,6 +226,9 @@ namespace CompactView
                 {
                     Text = string.Concat(formText, " - ", db.FileName);
 
+                    var allDdls = db.AllAvailableEntireDdls();
+                    rtbDdl.RtfSqlCache.SetRange(allDdls);
+
                     // Fill tree with database name and table names
                     using (_ = treeDb.UpdateSection())
                     {

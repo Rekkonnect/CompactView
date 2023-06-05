@@ -20,7 +20,6 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 using CompactView.Lexing;
 using System;
-using System.Collections.Generic;
 
 namespace CompactView
 {
@@ -30,7 +29,7 @@ namespace CompactView
     /// </summary>
     public class SqlString
     {
-        private readonly Lazy<List<Token>> _lazyTokens;
+        private readonly Lazy<TokenList> _lazyTokens;
 
         public string Sql { get; }
 
@@ -39,15 +38,15 @@ namespace CompactView
         public SqlString(string sql)
         {
             Sql = sql;
-            _lazyTokens = new Lazy<List<Token>>(Tokenize);
+            _lazyTokens = new Lazy<TokenList>(Tokenize);
         }
 
-        public List<Token> GetTokens()
+        public TokenList GetTokens()
         {
             return _lazyTokens.Value;
         }
 
-        private List<Token> Tokenize()
+        private TokenList Tokenize()
         {
             return Lexer.Tokenize(Sql);
         }

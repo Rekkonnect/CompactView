@@ -74,6 +74,11 @@ namespace CompactView
             base.Close();
         }
 
+        public IEnumerable<SqlString> AllAvailableEntireDdls()
+        {
+            return _ddlStorage.AllAvailableEntireDdls();
+        }
+
         public SqlString GetDatabaseDdlSql()
         {
             return _ddlStorage.DatabaseDdl.EntireDdl;

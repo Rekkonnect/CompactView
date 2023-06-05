@@ -26,7 +26,7 @@ namespace CompactView.Lexing
     {
         public static SqlLexer Shared { get; } = new SqlLexer();
 
-        private List<Token> tokens = new List<Token>();
+        private TokenList tokens = new TokenList();
 
         private string sourceSql;
         private string upperSql;
@@ -61,7 +61,7 @@ namespace CompactView.Lexing
 
         private void Reset()
         {
-            tokens = new List<Token>();
+            tokens = new TokenList();
 
             inSingleLineComment = false;
             inMultiLineComment = false;
@@ -74,7 +74,7 @@ namespace CompactView.Lexing
             currentTokenStart = 0;
         }
 
-        public List<Token> Tokenize(string sql)
+        public TokenList Tokenize(string sql)
         {
             Reset();
 
