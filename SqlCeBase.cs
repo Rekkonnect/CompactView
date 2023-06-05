@@ -22,35 +22,31 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SqlServerCe;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace CompactView
 {
     public class SqlCeBase : IDisposable
     {
+        // Regular expression to search texts finished with semicolons that is not between single quotes
+        private static readonly Regex regexSemicolon = new Regex("(?:[^;']|'[^']*')+", RegexOptions.Compiled | RegexOptions.Multiline);
 
-        /// <summary>
-        /// Initialize a new instance of SqlCeDb
-        /// </summary>
-        public SqlCeBase()
+        public static Version[] AvailableVersions { get; } =
         {
-            LastError = string.Empty;
-            regexSemicolon.Match(string.Empty);
-        }
-
-        public static Version[] AvailableVersions { get; } = {   // List of available versions starting with the oldest
+            // List of available versions starting with the oldest
             // new Version("2.0", "2.0.0.0", 0x73616261),
             new Version("3.1", "9.0.242.0", 0x002dd714),
             new Version("3.5", "3.5.0.0", 0x00357b9d),
             new Version("4.0", "4.0.0.0", 0x003d0900)
         };
+
         public SqlCeConnection Connection { get; private set; }
+
+
         public string FileName { get; private set; }
         public string Password { get; private set; }
         public string LastError { get; private set; }
@@ -58,8 +54,15 @@ namespace CompactView
         public bool BadPassword { get; private set; }
         public int QueryCount { get; private set; }
 
-        // Regular expression to search texts finished with semicolons that is not between single quotes
-        private Regex regexSemicolon = new Regex("(?:[^;']|'[^']*')+", RegexOptions.Compiled | RegexOptions.Multiline);
+        static SqlCeBase()
+        {
+            regexSemicolon.ColdStart();
+        }
+
+        public SqlCeBase()
+        {
+            LastError = string.Empty;
+        }
 
         public void Dispose()
         {
@@ -80,7 +83,7 @@ namespace CompactView
         /// </summary>
         /// <param name="databaseFile">Database file name to open</param>
         /// <param name="password">Password of database file</param>
-        public bool Open(string databaseFile, string password)
+        public virtual bool Open(string databaseFile, string password)
         {
             Close();
             FileName = Path.GetFullPath(databaseFile);
@@ -106,7 +109,7 @@ namespace CompactView
             return ok;
         }
 
-        public void Close()
+        public virtual void Close()
         {
             if (Connection != null && Connection.State != ConnectionState.Closed)
                 Connection.Close();

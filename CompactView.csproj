@@ -30,6 +30,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -62,7 +64,11 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Garyon, Version=0.3.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Garyon.0.3.3\lib\netstandard2.0\Garyon.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -86,6 +92,12 @@
     <Compile Include="ColorComboBox.cs" />
     <Compile Include="ControlUpdatingExtensions.cs" />
     <Compile Include="DataSetExtensions.cs" />
+    <Compile Include="DbReaderExtensions.cs" />
+    <Compile Include="Ddl\DdlStorage.cs" />
+    <Compile Include="Ddl\FinalizableSqlStringBuilder.cs" />
+    <Compile Include="Ddl\FinalizableStringBuilder.cs" />
+    <Compile Include="Ddl\SchemaDdl.cs" />
+    <Compile Include="Ddl\SchemaObjectType.cs" />
     <Compile Include="DoubleBufferedDataGridView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -111,6 +123,15 @@
     <Compile Include="ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="IndexInfo.cs" />
+    <Compile Include="InformationSchema.Column.cs" />
+    <Compile Include="InformationSchema.cs" />
+    <Compile Include="InformationSchema.Index.cs" />
+    <Compile Include="InformationSchema.KeyColumnUsage.cs" />
+    <Compile Include="InformationSchema.ReferentialConstraint.cs" />
+    <Compile Include="InformationSchema.Table.cs" />
+    <Compile Include="InformationSchema.TableConstraint.cs" />
+    <Compile Include="InformationSchemaCache.cs" />
     <Compile Include="LayoutSuspension.cs" />
     <Compile Include="Lexing\LexExtensions.cs" />
     <Compile Include="Lexing\SqlLexer.cs" />
@@ -118,6 +139,7 @@
     <Compile Include="Lexing\StringSlice.cs" />
     <Compile Include="Lexing\Token.cs" />
     <Compile Include="Lexing\TokenKind.cs" />
+    <Compile Include="ListValueStringDictionary.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,15 +156,22 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.cs" />
+    <Compile Include="ReferentialConstraintInfo.cs" />
+    <Compile Include="RegexExtensions.cs" />
     <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="RichTextBoxHelper.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SqlCeBase.cs" />
     <Compile Include="SqlCeDb.cs" />
+    <Compile Include="SqlCeInformationSchemaData.cs" />
     <Compile Include="SqlCeNativeErrors.cs" />
     <Compile Include="SqlRichTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SqlString.cs" />
+    <Compile Include="StringBuilderExtensions.cs" />
+    <Compile Include="QualifiedObjectName.cs" />
+    <Compile Include="TableConstraintInfo.cs" />
     <Compile Include="ToolsForm.cs">
       <SubType>Form</SubType>
     </Compile>

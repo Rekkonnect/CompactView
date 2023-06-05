@@ -20,6 +20,7 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 using CompactView.Lexing;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -31,6 +32,14 @@ namespace CompactView
         private readonly AuxiliarySqlRtb _auxiliaryRtb = new AuxiliarySqlRtb();
 
         private bool _parsing = false;
+
+        public SqlString SqlString
+        {
+            set
+            {
+                ProcessViaAuxiliary(value);
+            }
+        }
 
         public override string Text
         {
@@ -57,10 +66,11 @@ namespace CompactView
             if (_parsing)
                 return;
 
-            ProcessViaAuxiliary();
+            var sqlString = new SqlString(Text);
+            ProcessViaAuxiliary(sqlString);
         }
 
-        private void ProcessViaAuxiliary()
+        private void ProcessViaAuxiliary(SqlString sql)
         {
             _parsing = true;
 
@@ -70,7 +80,7 @@ namespace CompactView
             _auxiliaryRtb.ZoomFactor = ZoomFactor;
             _auxiliaryRtb.Font = Font;
 
-            _auxiliaryRtb.SetText(Text);
+            _auxiliaryRtb.SetSqlString(sql);
 
             int firstVisibleLineBefore = this.GetFirstVisibleLine();
             int hScroll = this.GetHScroll();
@@ -79,7 +89,6 @@ namespace CompactView
 
             this.SetRedraw(false);
 
-            // The big parsing moment
             Rtf = _auxiliaryRtb.Rtf;
             ZoomFactor = previousZoom;
             Font = previousFont;
@@ -128,11 +137,9 @@ namespace CompactView
                 SetColorMapping(kind, color);
             }
 
-            public void SetText(string text)
+            private void SetTokens(List<Token> tokens)
             {
                 Text = string.Empty;
-
-                var tokenized = SqlLexer.Shared.Tokenize(text);
 
                 var builder = new RtfStringBuilder();
                 builder.AppendUnprocessed(_rtfHeader);
@@ -143,7 +150,7 @@ namespace CompactView
                 // This header specifies the Latin text
                 builder.AppendUnprocessed(@"\lang1033 ");
 
-                foreach (var token in tokenized)
+                foreach (var token in tokens)
                 {
                     builder.AppendUnprocessed(@"\cf");
                     builder.Append((int)token.Kind + 1);
@@ -154,6 +161,18 @@ namespace CompactView
                 builder.AppendUnprocessed("\\par\n");
                 builder.Append('}');
                 Rtf = builder.ToString();
+            }
+
+            public void SetText(string text)
+            {
+                var sqlString = new SqlString(text);
+                SetSqlString(sqlString);
+            }
+
+            public void SetSqlString(SqlString sql)
+            {
+                var tokens = sql.GetTokens();
+                SetTokens(tokens);
             }
 
             private StringSlice GetMetaHeaders()

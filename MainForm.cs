@@ -395,21 +395,23 @@ namespace CompactView
                     // Database node
                     dataGrid.ReadOnly = true;
                     dataGrid.DataSource = DatabaseInfoLocale(db.DatabaseInfo);
-                    rtbDdl.Text = db.GetDatabaseDdl();
+                    rtbDdl.SqlString = db.GetDatabaseDdlSql();
                 }
                 else
                 {
                     // Table node
                     dataGrid.ReadOnly = cbReadOnly.SelectedIndex == 0;
                     dataGrid.Columns.Clear();
+
+                    var tableDdl = db.GetTableDdl(e.Node.Name);
                     if (tabControl1.SelectedIndex == 0)
                     {
                         dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
-                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                        rtbDdl.SqlString = tableDdl;
                     }
                     else
                     {
-                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                        rtbDdl.SqlString = tableDdl;
                         dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
                     }
                 }
@@ -491,7 +493,7 @@ namespace CompactView
                 lbResult.Text = $"{db.QueryCount} {GlobalText.GetValue("Queries")}, {dataGrid.RowCount} {GlobalText.GetValue("Rows")}, {ms} {GlobalText.GetValue("Milliseconds")}";
                 if (resultSet == null && regexCreateAlterDrop.IsMatch(regexDropQuotesAndBrackets.Replace(rtbQuery.Text, string.Empty)))
                 {
-                    db.ResetDdl();  // Update DDL
+                    db.RebuildDdl();
                     UpdateTreeDb();
                 }
                 else
@@ -553,6 +555,8 @@ namespace CompactView
             char c = ' ';
 
             int start = rtbDdl.SelectionStart;
+            if (start >= rtbDdl.Text.Length)
+                start = rtbDdl.Text.Length - 1;
             while (start >= 0 && (c = rtbDdl.Text[start]) != '[')
                 if (c == ']' || c == (char)10)
                     break;
