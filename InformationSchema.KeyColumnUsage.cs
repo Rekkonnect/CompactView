@@ -20,15 +20,17 @@ CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.KEY_COLUMN_USAGE")]
+        [Table("KEY_COLUMN_USAGE", Schema = Schema)]
         public class KeyColumnUsage
         {
+            [Key]
             [Column("CONSTRAINT_NAME")]
             public string ConstraintName { get; set; }
 

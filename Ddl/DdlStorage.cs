@@ -84,10 +84,17 @@ namespace CompactView.Ddl
 
             foreach (var tableDdl in allConstructedDdls)
             {
-                databaseDdlBuilder.ColumnsDdl.Builder.Append(tableDdl.ColumnsDdl.Sql);
-                databaseDdlBuilder.PrimaryKeysDdl.Builder.Append(tableDdl.PrimaryKeysDdl.Sql);
-                databaseDdlBuilder.IndexesDdl.Builder.Append(tableDdl.IndexesDdl.Sql);
-                databaseDdlBuilder.ForeignKeysDdl.Builder.Append(tableDdl.ForeignKeysDdl.Sql);
+                databaseDdlBuilder.ColumnsDdl.Builder
+                    .Append(tableDdl.ColumnsDdl.Sql);
+
+                databaseDdlBuilder.PrimaryKeysDdl.Builder
+                    .Append(tableDdl.PrimaryKeysDdl.Sql);
+
+                databaseDdlBuilder.IndexesDdl.Builder
+                    .Append(tableDdl.IndexesDdl.Sql);
+
+                databaseDdlBuilder.ForeignKeysDdl.Builder
+                    .Append(tableDdl.ForeignKeysDdl.Sql);
             }
 
             _databaseDdl = databaseDdlBuilder.Build();

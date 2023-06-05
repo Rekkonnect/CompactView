@@ -56,29 +56,33 @@ namespace CompactView.Ddl
         public void LoadColumns(string tableName, IReadOnlyList<InformationSchema.Column> columns)
         {
             DdlFactory.Shared.AppendTable(_columns.Builder, tableName, columns);
+            _columns.Builder.AppendLineCount(2);
         }
         public void LoadIndexes(IReadOnlyList<IndexInfo> indexes)
         {
             foreach (var index in indexes)
             {
                 DdlFactory.Shared.AppendIndexInfo(_indexes.Builder, index);
-                _indexes.Builder.AppendLine(2);
+                _indexes.Builder.AppendLineCount(2);
             }
         }
         public void LoadPrimaryKeys(IReadOnlyList<TableConstraintInfo> constraints)
         {
             foreach (var constraint in constraints)
             {
+                if (constraint.TableConstraint.ConstraintTypeValue != InformationSchema.ConstraintType.PrimaryKey)
+                    continue;
+
                 DdlFactory.Shared.AppendPrimaryKeyInfo(_primaryKeys.Builder, constraint);
-                _indexes.Builder.AppendLine(2);
+                _primaryKeys.Builder.AppendLineCount(2);
             }
         }
         public void LoadForeignKeys(IReadOnlyList<ReferentialConstraintInfo> constraints)
         {
             foreach (var constraint in constraints)
             {
-                DdlFactory.Shared.AppendForeignKeyInfo(_primaryKeys.Builder, constraint);
-                _indexes.Builder.AppendLine(2);
+                DdlFactory.Shared.AppendForeignKeyInfo(_foreignKeys.Builder, constraint);
+                _foreignKeys.Builder.AppendLineCount(2);
             }
         }
 
@@ -91,10 +95,10 @@ namespace CompactView.Ddl
 
             _entireDdl.Clear();
             _entireDdl.Builder
-                .AppendLine(_columns.FinalizedString)
-                .AppendLine(_primaryKeys.FinalizedString)
-                .AppendLine(_indexes.FinalizedString)
-                .AppendLine(_foreignKeys.FinalizedString);
+                .Append(_columns.FinalizedString)
+                .Append(_primaryKeys.FinalizedString)
+                .Append(_indexes.FinalizedString)
+                .Append(_foreignKeys.FinalizedString);
 
             _entireDdl.FinalizeBuilder();
         }
@@ -329,7 +333,7 @@ namespace CompactView.Ddl
             }
             builder.Append("INDEX ");
             AppendIdentifier(builder, indexName);
-            builder.Append(" ON ");
+            builder.Append(" ON (");
             AppendIdentifier(builder, tableName);
 
             for (int i = 0; i < indexInfo.ColumnIndexes.Count; i++)
@@ -344,7 +348,7 @@ namespace CompactView.Ddl
 
                 if (i < indexInfo.ColumnIndexes.Count - 1)
                 {
-                    builder.Append(',');
+                    builder.Append(", ");
                 }
             }
 

@@ -23,7 +23,7 @@ using Garyon.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Data.Entity;
+using System.Data;
 using System.Linq;
 
 namespace CompactView
@@ -68,11 +68,11 @@ namespace CompactView
         public IReadOnlyDictionary<string, IndexInfo> IndexInfoByName
             => indexInfoByName;
 
-        public InformationSchemaSqlCeContext Context { get; }
+        public SqlCeInformationSchemaData SchemaData { get; }
 
-        public InformationSchemaCache(InformationSchemaSqlCeContext context)
+        public InformationSchemaCache(SqlCeInformationSchemaData schemaData)
         {
-            Context = context;
+            SchemaData = schemaData;
         }
 
         public IReadOnlyList<TableConstraintInfo> TableConstraintInfoForTable(string tableName)
@@ -139,14 +139,14 @@ namespace CompactView
         {
             // Get table names
             tableNames = new StringCollection();
-            var tableNameList = Context.Tables.Select(d => d.TableName).ToArray();
+            var tableNameList = SchemaData.Tables.Select(d => d.TableName).ToArray();
             tableNames.AddRange(tableNameList);
 
-            indexesByTable = ToListValueStringDictionary(Context.Indexes, d => d.TableName);
-            columnsByTable = ToListValueStringDictionary(Context.Columns, d => d.TableName);
-            keyColumnUsagesByTable = ToListValueStringDictionary(Context.KeyColumnUsages, d => d.TableName);
-            tableConstraintsByTable = ToListValueStringDictionary(Context.TableConstraints, d => d.TableName);
-            referentialConstraintsByTable = ToListValueStringDictionary(Context.ReferentialConstraints, d => d.ConstraintTableName);
+            indexesByTable = ToListValueStringDictionary(SchemaData.Indexes, d => d.TableName);
+            columnsByTable = ToListValueStringDictionary(SchemaData.Columns, d => d.TableName);
+            keyColumnUsagesByTable = ToListValueStringDictionary(SchemaData.KeyColumnUsages, d => d.TableName);
+            tableConstraintsByTable = ToListValueStringDictionary(SchemaData.TableConstraints, d => d.TableName);
+            referentialConstraintsByTable = ToListValueStringDictionary(SchemaData.ReferentialConstraints, d => d.ConstraintTableName);
 
             // Sort the loaded information by their ordinal positions
             // to preserve DDL order
@@ -241,12 +241,14 @@ namespace CompactView
             }
         }
 
-        private static ListValueStringDictionary<T> ToListValueStringDictionary<T>(DbSet<T> dbSet, Func<T, string> tableNameGetter)
+        private static ListValueStringDictionary<T> ToListValueStringDictionary<T>(
+            IReadOnlyCollection<T> collection,
+            Func<T, string> tableNameGetter)
+
             where T : class
         {
             var dictionary = new ListValueStringDictionary<T>();
-            var items = dbSet.ToList();
-            foreach (var item in items)
+            foreach (var item in collection)
                 dictionary.Add(tableNameGetter(item), item);
             return dictionary;
         }

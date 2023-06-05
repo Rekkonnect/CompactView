@@ -226,15 +226,6 @@ namespace CompactView
                 {
                     Text = string.Concat(formText, " - ", db.FileName);
 
-                    // EF TEST
-
-                    using (var context = new InformationSchemaSqlCeContext(db.Connection))
-                    {
-
-                    }
-
-                    // END EF TEST
-
                     // Fill tree with database name and table names
                     using (_ = treeDb.UpdateSection())
                     {
@@ -404,21 +395,23 @@ namespace CompactView
                     // Database node
                     dataGrid.ReadOnly = true;
                     dataGrid.DataSource = DatabaseInfoLocale(db.DatabaseInfo);
-                    rtbDdl.Text = db.GetDatabaseDdl();
+                    rtbDdl.SqlString = db.GetDatabaseDdlSql();
                 }
                 else
                 {
                     // Table node
                     dataGrid.ReadOnly = cbReadOnly.SelectedIndex == 0;
                     dataGrid.Columns.Clear();
+
+                    var tableDdl = db.GetTableDdl(e.Node.Name);
                     if (tabControl1.SelectedIndex == 0)
                     {
                         dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
-                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                        rtbDdl.SqlString = tableDdl;
                     }
                     else
                     {
-                        rtbDdl.Text = db.GetTableDdl(e.Node.Name, true, true, true, true);
+                        rtbDdl.SqlString = tableDdl;
                         dataGrid.DataSource = db.GetTableData(e.Node.Text, null, SortOrder.None);
                     }
                 }
@@ -562,6 +555,8 @@ namespace CompactView
             char c = ' ';
 
             int start = rtbDdl.SelectionStart;
+            if (start >= rtbDdl.Text.Length)
+                start = rtbDdl.Text.Length - 1;
             while (start >= 0 && (c = rtbDdl.Text[start]) != '[')
                 if (c == ']' || c == (char)10)
                     break;

@@ -26,24 +26,12 @@ namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.TABLE_CONSTRAINTS")]
+        [Table("TABLE_CONSTRAINTS", Schema = Schema)]
         public class TableConstraint
         {
             [Key]
             [Column("CONSTRAINT_NAME")]
             public string ConstraintName { get; set; }
-
-            [Column("CONSTRAINT_CATALOG")]
-            public string ConstraintCatalog { get; set; }
-
-            [Column("CONSTRAINT_SCHEMA")]
-            public string ConstraintSchema { get; set; }
-
-            [Column("TABLE_CATALOG")]
-            public string TableCatalog { get; set; }
-
-            [Column("TABLE_SCHEMA")]
-            public string TableSchema { get; set; }
 
             [Column("TABLE_NAME")]
             public string TableName { get; set; }
@@ -59,6 +47,24 @@ namespace CompactView
 
             [Column("DESCRIPTION")]
             public string Description { get; set; }
+
+            #region Ignored
+            [NotMapped]
+            [Column("CONSTRAINT_CATALOG")]
+            public string ConstraintCatalog { get; set; }
+
+            [NotMapped]
+            [Column("CONSTRAINT_SCHEMA")]
+            public string ConstraintSchema { get; set; }
+
+            [NotMapped]
+            [Column("TABLE_CATALOG")]
+            public string TableCatalog { get; set; }
+
+            [NotMapped]
+            [Column("TABLE_SCHEMA")]
+            public string TableSchema { get; set; }
+            #endregion
 
             [NotMapped]
             public ConstraintType ConstraintTypeValue

@@ -19,39 +19,38 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
-using System.Text;
+using System.Data.Common;
 
 namespace CompactView
 {
-    public static class StringBuilderExtensions
+    public static class DbReaderExtensions
     {
-        public static StringBuilder AppendUpper(this StringBuilder stringBuilder, string value)
+        public static string GetNullableString(this DbDataReader reader, int ordinal)
         {
-            for (int i = 0; i < value.Length; i++)
-                stringBuilder.Append(char.ToUpper(value[i]));
-
-            return stringBuilder;
-        }
-        public static StringBuilder AppendLower(this StringBuilder stringBuilder, string value)
-        {
-            for (int i = 0; i < value.Length; i++)
-                stringBuilder.Append(char.ToLower(value[i]));
-
-            return stringBuilder;
+            if (reader.IsDBNull(ordinal))
+                return null;
+            return reader.GetString(ordinal);
         }
 
-        public static StringBuilder AppendLine(this StringBuilder stringBuilder, char value)
+        public static long? GetNullableInt64(this DbDataReader reader, int ordinal)
         {
-            return stringBuilder
-                .Append(value)
-                .AppendLine();
+            if (reader.IsDBNull(ordinal))
+                return null;
+            return reader.GetInt64(ordinal);
         }
 
-        public static StringBuilder AppendLineCount(this StringBuilder stringBuilder, int count)
+        public static int? GetNullableInt32(this DbDataReader reader, int ordinal)
         {
-            for (int i = 0; i < count; i++)
-                stringBuilder.AppendLine();
-            return stringBuilder;
+            if (reader.IsDBNull(ordinal))
+                return null;
+            return reader.GetInt32(ordinal);
+        }
+
+        public static int? UpcastInt16NullableInt32(this DbDataReader reader, int ordinal)
+        {
+            if (reader.IsDBNull(ordinal))
+                return null;
+            return reader.GetInt16(ordinal);
         }
     }
 }

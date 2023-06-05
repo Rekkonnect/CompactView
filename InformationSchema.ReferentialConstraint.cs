@@ -19,6 +19,7 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CompactView
@@ -31,6 +32,7 @@ namespace CompactView
             [Column("CONSTRAINT_TABLE_NAME")]
             public string ConstraintTableName { get; set; }
 
+            [Key]
             [Column("CONSTRAINT_NAME")]
             public string ConstraintName { get; set; }
 

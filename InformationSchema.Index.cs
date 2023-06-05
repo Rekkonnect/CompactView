@@ -28,7 +28,7 @@ namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.INDEXES")]
+        [Table("INDEXES", Schema = Schema)]
         public class Index
         {
             [Key]

@@ -18,6 +18,7 @@ along with CompactView.  If not, see <http://www.gnu.org/licenses/>.
 
 CompactView web site <http://sourceforge.net/p/compactview/>.
 **************************************************************************/
+using CompactView.Ddl;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -36,6 +37,10 @@ namespace CompactView
         private readonly Dictionary<string, string> indexesDdl = new Dictionary<string, string>();
         private readonly Dictionary<string, string> foreignKeysDdl = new Dictionary<string, string>();
 
+        private readonly DdlStorage _ddlStorage = new DdlStorage();
+        private InformationSchemaCache _schemaCache;
+        private SqlCeInformationSchemaData _schemaData;
+
         public SqlCeDb() : base()
         {
             culture = CultureInfo.InvariantCulture;
@@ -44,13 +49,34 @@ namespace CompactView
         public override bool Open(string databaseFile, string password)
         {
             tablesDdl.Clear();
-            return base.Open(databaseFile, password);
+            _ddlStorage.Clear();
+            bool success = base.Open(databaseFile, password);
+            if (!success)
+                return false;
+
+            LoadDatabaseInformation();
+            return true;
+        }
+
+        private void LoadDatabaseInformation()
+        {
+            _schemaData = new SqlCeInformationSchemaData(Connection);
+            _schemaData.LoadAll();
+
+            _schemaCache = new InformationSchemaCache(_schemaData);
+            _schemaCache.Load();
+            _ddlStorage.Build(_schemaCache);
         }
 
         public override void Close()
         {
             ResetDdl();
             base.Close();
+        }
+
+        public SqlString GetDatabaseDdlSql()
+        {
+            return _ddlStorage.DatabaseDdl.EntireDdl;
         }
 
         public string GetDatabaseDdl()
@@ -69,6 +95,11 @@ namespace CompactView
             foreach (string tableName in TableNames)
                 ddl.Append(GetTableDdl(tableName, false, false, false, true));
             return ddl.ToString();
+        }
+
+        public SqlString GetTableDdl(string tableName)
+        {
+            return _ddlStorage.TableDdl(tableName).EntireDdl;
         }
 
         public string GetTableDdl(string tableName, bool table, bool primaryKeys, bool indexes, bool foreignKeys)
@@ -119,6 +150,9 @@ namespace CompactView
             indexesDdl.Clear();
             foreignKeysDdl.Clear();
             ResetTableNames();
+
+            _schemaCache = null;
+            _ddlStorage.Clear();
         }
 
         public TreeNode[] GetSchemaNodes(string tableName)
@@ -205,32 +239,9 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
             foreignKeysDdl.Add(tableName, GetForeignKeysDdl(tableName));
         }
 
-        private string GetColumnType(string tableName, string columnName)
+        private CompactIndex GetIndex(ref DbDataReader dr)
         {
-            DbCommand cmd = Connection.CreateCommand();
-            cmd.CommandText = $"SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='[{tableName}] AND COLUMN_NAME=[{columnName}]";
-            DbDataReader dr = cmd.ExecuteReader();
-
-            var s = string.Empty;
-            if (dr.Read())
-            {
-                if (!dr.IsDBNull(2))
-                {
-                    s = $"Data type: {dr.GetString(1)}\r\nMax length: {dr.GetInt32(2)}";
-                }
-                else
-                {
-                    s = $"Data type: {dr.GetString(1)}\r\nPrecision: {dr.GetValue(3)}\r\nScale: {dr.GetValue(4)}";
-                }
-            }
-            dr.Close();
-
-            return s;
-        }
-
-        private Index GetIndex(ref DbDataReader dr)
-        {
-            var idx = new Index
+            var idx = new CompactIndex
             {
                 IndexName = dr.GetString(0),
                 Unique = dr.GetBoolean(2),
@@ -272,7 +283,7 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
             return cst;
         }
 
-        private void AddColumnLine(StringBuilder ddl, Column col)
+        private void AddColumnLine(StringBuilder ddl, CompactColumn col)
         {
             switch (col.DataType)
             {
@@ -352,9 +363,9 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
             }
         }
 
-        private Column GetColumn(ref DbDataReader dr)
+        private CompactColumn GetColumn(ref DbDataReader dr)
         {
-            var col = new Column
+            var col = new CompactColumn
             {
                 ColumnName = dr.GetString(0),
                 ColumnHasDefault = (dr.IsDBNull(1) ? false : dr.GetBoolean(1)),
@@ -446,7 +457,7 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
             string prevName = string.Empty;
             while (dr.Read())
             {
-                Index idx = GetIndex(ref dr);
+                CompactIndex idx = GetIndex(ref dr);
                 if (idx.IndexName == prevName)
                 {
                     ddl.Append(", ");
@@ -492,7 +503,7 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
         ASC, DESC
     }
 
-    struct Index
+    struct CompactIndex
     {
         public string IndexName { get; set; }
         public bool Unique { get; set; }
@@ -502,7 +513,7 @@ ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
         public SortOrderEnum SortOrder { get; set; }
     }
 
-    struct Column
+    struct CompactColumn
     {
         public string ColumnName { get; set; }
         public bool IsNullable { get; set; }

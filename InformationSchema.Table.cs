@@ -27,7 +27,7 @@ namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.TABLES")]
+        [Table("TABLES", Schema = Schema)]
         public class Table
         {
             [Key]

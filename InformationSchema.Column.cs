@@ -28,7 +28,7 @@ namespace CompactView
 {
     public partial class InformationSchema
     {
-        [Table("INFORMATION_SCHEMA.COLUMNS")]
+        [Table("COLUMNS", Schema = Schema)]
         public class Column
         {
             [Key]
@@ -64,10 +64,10 @@ namespace CompactView
             public int? NumericScale { get; set; }
 
             [Column("AUTOINC_SEED")]
-            public int? AutoIncrementSeed { get; set; }
+            public long? AutoIncrementSeed { get; set; }
 
             [Column("AUTOINC_INCREMENT")]
-            public int? AutoIncrementBy { get; set; }
+            public long? AutoIncrementBy { get; set; }
 
             #region Ignored
             [NotMapped]
